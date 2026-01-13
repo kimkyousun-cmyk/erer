@@ -1,8 +1,31 @@
+:root {
+    --primary-color: #FF6B6B;
+    --secondary-color: #FFC371;
+    --accent-color: #8BC6EC;
+    --background-color: #f0f2f5;
+    --text-color: #333;
+    --card-background: #ffffff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --font-family: 'Inter', sans-serif;
+    --button-text-color: #ffffff;
+}
+
+[data-theme='dark'] {
+    --primary-color: #FF8787;
+    --secondary-color: #FFD580;
+    --accent-color: #9ECBFF;
+    --background-color: #1a1a1a;
+    --text-color: #f0f2f5;
+    --card-background: #2a2a2a;
+    --shadow-color: rgba(0, 0, 0, 0.4);
+    --button-text-color: #333;
+}
+
 
 body {
-    font-family: 'Arial', sans-serif;
-    background-color: #f0f2f5;
-    color: #333;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
     margin: 0;
     padding: 20px;
     display: flex;
@@ -10,6 +33,34 @@ body {
     align-items: center;
     min-height: 100vh;
     text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-switcher {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+}
+
+#theme-toggle {
+    background: var(--card-background);
+    border: 1px solid var(--shadow-color);
+    border-radius: 50%;
+    cursor: pointer;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: all 0.3s ease;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+#theme-toggle svg {
+    stroke: var(--text-color);
 }
 
 .container {
@@ -18,88 +69,14 @@ body {
 }
 
 h1 {
-    color: #ff6f61;
-    margin-bottom: 30px;
+    font-size: 3rem;
+    font-weight: 800;
+    color: transparent;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    margin-bottom: 40px;
 }
-
-.card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    padding: 30px;
-    margin-bottom: 30px;
-    transition: transform 0.3s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.menu-display {
-    font-size: 24px;
-    font-weight: bold;
-    color: #333;
-    min-height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: opacity 0.5s ease-in-out;
-    opacity: 1;
-}
-
-.menu-display.fade-out {
-    opacity: 0;
-}
-
-button {
-    padding: 15px 30px;
-    font-size: 18px;
-    cursor: pointer;
-    border: none;
-    border-radius: 10px;
-    background: linear-gradient(45deg, #ff6f61, #ff8c7a);
-    color: white;
-    transition: background 0.3s, transform 0.2s;
-    box-shadow: 0 4px 10px rgba(255, 111, 97, 0.4);
-}
-
-button:hover {
-    background: linear-gradient(45deg, #ff8c7a, #ff6f61);
-    transform: translateY(-2px);
-}
-
-button:active {
-    transform: translateY(1px);
-}
-
-button i {
-    margin-right: 10px;
-}
-
-.add-menu-form {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-
-#new-menu-input {
-    flex-grow: 1;
-    padding: 15px;
-    font-size: 16px;
-    border: 2px solid #ddd;
-    border-radius: 10px 0 0 10px;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-#new-menu-input:focus {
-    border-color: #ff6f61;
-}
-
-#add-menu-btn {
-    border-radius: 0 10px 10px 0;
-}
-
 
 /* Responsive Design */
 @media (max-width: 600px) {
@@ -108,29 +85,11 @@ button i {
     }
 
     h1 {
-        font-size: 24px;
+        font-size: 2.5rem;
     }
 
-    .card {
-        padding: 20px;
-    }
-
-    button {
-        padding: 12px 24px;
-        font-size: 16px;
-    }
-
-    .add-menu-form {
-        flex-direction: column;
-    }
-
-    #new-menu-input, #add-menu-btn {
-        border-radius: 10px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    #add-menu-btn {
-        margin-top: 10px;
+    .theme-switcher {
+        top: 10px;
+        right: 10px;
     }
 }

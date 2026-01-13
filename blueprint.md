@@ -1,34 +1,26 @@
-# Menu Recommendation Website
+# Blueprint: 오늘 뭐 먹지?
 
 ## Overview
 
-A simple and fun web application that helps users decide what to eat by recommending a random menu item. The application will also allow users to add their own menu suggestions.
-
-## Project Outline
-
-*   **`index.html`**: The main page of the application. It will contain a title, a button to get a menu recommendation, an input field and button to add new menus, and a space to display the result.
-*   **`style.css`**: Styles for the application to ensure a clean, modern, and user-friendly interface. It will include responsive design for different screen sizes and animations.
-*   **`main.js`**: The JavaScript logic that powers the menu recommendation and addition features. It will include an array of food items, a function to randomly select one, and a function to add new items to the list.
+A simple web application to help users decide what to eat. It recommends a random food item from a predefined list and allows users to add new items to the list.
 
 ## Implemented Features
 
-*   **Core Functionality**:
-    *   Recommends a random menu item from a predefined list.
-    *   Displays the recommended menu to the user.
+*   **Initial Setup:** A basic HTML structure with two cards for recommending and adding menu items, styled with CSS and controlled by JavaScript.
+*   **Web Components:** The UI has been refactored into modular and reusable Web Components (`<menu-recommender>` and `<menu-adder>`).
+*   **Data Persistence:** The menu list is now saved to `localStorage`, so user-added items persist between sessions.
+*   **Custom Notifications:** User feedback is provided through non-intrusive toast notifications instead of browser alerts.
+*   **Theme Switching (Dark/White Mode):** Users can switch between dark and light themes. The preference is saved in `localStorage` and the OS preference is automatically detected.
 
-## Current Task: Enhance the Menu Recommendation Website
+## Current Task: Design Modernization
 
-*   **Objective**: Add new features to improve user interaction and visual appeal.
-*   **Plan**:
-    1.  **Add New Menu Feature**:
-        *   Add an input field and a button to `index.html` for users to add new menu items.
-        *   In `main.js`, create a function to handle adding the new menu item to the existing list.
-    2.  **Add Visual Effects**:
-        *   In `style.css`, add a simple animation (e.g., fade-in or a card flip) for when the recommended menu is displayed.
-        *   Trigger the animation in `main.js` when a menu is recommended.
-    3.  **Improve Design**:
-        *   Restructure the layout in `index.html` to use a card-based design for the main interaction area.
-        *   Update `style.css` to style the cards, add shadows, and improve the overall visual hierarchy.
-        *   Incorporate icons for the buttons.
-    4.  **Implement Responsive Design**:
-        *   Use media queries in `style.css` to adjust the layout and font sizes for smaller screens like mobile phones.
+This is the plan to improve the application based on modern web development practices and the `GEMINI.md` guidelines.
+
+1.  **Modernize CSS and Design:**
+    *   Introduce CSS custom properties (variables) for the color palette, fonts, and other design tokens to make theming and maintenance easier.
+    *   Apply a more modern and visually appealing design, incorporating principles from `GEMINI.md` such as improved iconography, gradients, and shadows.
+    *   **Completed:** Implemented dark and white modes with a theme switcher.
+
+## Future Improvements
+
+*   **Improve Inter-Component Communication:** Use custom events to communicate between the new Web Components. For example, when the `<menu-adder>` component adds a new item, it will dispatch an event that the `<menu-recommender>` component can listen to in order to update its list.

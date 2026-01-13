@@ -4,31 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘 뭐 먹지?</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>오늘 뭐 먹지?</h1>
-        <div class="card">
-            <div id="menu-display" class="menu-display">
-                <p>무엇을 먹을지 고민될 때 버튼을 눌러주세요!</p>
-            </div>
-            <button id="recommend-btn">
-                <i class="fa-solid fa-utensils"></i> 메뉴 추천받기
+        <div class="theme-switcher">
+            <button id="theme-toggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
             </button>
         </div>
-
-        <div class="card">
-            <h2>새로운 메뉴 추가</h2>
-            <div class="add-menu-form">
-                <input type="text" id="new-menu-input" placeholder="새로운 메뉴를 입력하세요">
-                <button id="add-menu-btn">
-                    <i class="fa-solid fa-plus"></i> 추가
-                </button>
-            </div>
-        </div>
+        <h1>오늘 뭐 먹지?</h1>
+        <menu-recommender></menu-recommender>
+        <menu-adder></menu-adder>
     </div>
-    <script src="main.js" defer></script>
+    <notification-toast></notification-toast>
+    <script src="main.js" type="module" defer></script>
 </body>
 </html>
