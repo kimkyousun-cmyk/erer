@@ -17,5 +17,19 @@
     "chinese": "중식",
     "japanese": "일식",
     "western": "양식",
-    "other": "기타"
+    "other": "기타",
+    "formTitle": "제휴 문의",
+    "formNameLabel": "이름",
+    "formNamePlaceholder": "귀하의 이름",
+    "formEmailLabel": "이메일",
+    "formEmailPlaceholder": "example@email.com",
+    "formMessageLabel": "메시지",
+    "formMessagePlaceholder": "문의 내용을 작성해주세요.",
+    "formSubmitButton": "보내기",
+    "formValidationErrorName": "이름을 입력해주세요.",
+    "formValidationErrorEmail": "유효한 이메일 주소를 입력해주세요.",
+    "formValidationErrorRequired": "메시지 내용을 입력해주세요.",
+    "formValidationErrorGeneric": "폼 제출에 오류가 있습니다. 모든 필수 필드를 채워주세요.",
+    "formSubmitSuccess": "문의가 성공적으로 전송되었습니다!",
+    "formSubmitError": "폼 제출 중 오류가 발생했습니다. 다시 시도해주세요."
 }

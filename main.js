@@ -319,6 +319,225 @@ class MenuList extends HTMLElement {
 
 customElements.define('menu-list', MenuList);
 
+class PartnershipForm extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.formspreeEndpoint = 'https://formspree.io/f/meeeeqzy';
+    }
+
+    connectedCallback() {
+        this.render();
+    }
+
+    render() {
+        this.shadowRoot.innerHTML = `
+            <style>
+                .card {
+                    background: var(--card-background);
+                    border-radius: 16px;
+                    padding: 24px;
+                    box-shadow: 0 8px 32px var(--shadow-color);
+                    text-align: left;
+                    margin-top: 20px;
+                }
+                h2 {
+                    font-size: 1.8rem;
+                    margin-top: 0;
+                    text-align: center;
+                }
+                .form-group {
+                    margin-bottom: 15px;
+                }
+                label {
+                    display: block;
+                    margin-bottom: 5px;
+                    color: var(--text-color);
+                    font-weight: 600;
+                }
+                input[type="text"],
+                input[type="email"],
+                textarea {
+                    width: calc(100% - 22px); /* Adjust for padding and border */
+                    padding: 10px;
+                    border: 1px solid var(--shadow-color);
+                    border-radius: 8px;
+                    background-color: var(--background-color);
+                    color: var(--text-color);
+                    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+                }
+                textarea {
+                    resize: vertical;
+                    min-height: 100px;
+                }
+                button[type="submit"] {
+                    background: linear-gradient(45deg, var(--accent-color), #9599E2);
+                    color: var(--button-text-color);
+                    border: none;
+                    border-radius: 8px;
+                    padding: 12px 24px;
+                    font-size: 16px;
+                    cursor: pointer;
+                    transition: transform 0.2s ease, background 0.3s ease;
+                    width: 100%;
+                    margin-top: 10px;
+                }
+                button[type="submit"]:hover {
+                    transform: scale(1.02);
+                }
+                button[type="submit"]:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+                .error-message {
+                    color: var(--primary-color);
+                    font-size: 0.9em;
+                    margin-top: 5px;
+                    display: none;
+                }
+
+                @media (max-width: 768px) {
+                    .card {
+                        padding: 16px;
+                    }
+                    h2 {
+                        font-size: 1.5rem;
+                    }
+                    input[type="text"],
+                    input[type="email"],
+                    textarea {
+                        padding: 8px;
+                        font-size: 14px;
+                    }
+                    button[type="submit"] {
+                        padding: 10px 20px;
+                        font-size: 14px;
+                    }
+                }
+            </style>
+            <div class="card">
+                <h2 data-i18n="formTitle">Form Title</h2>
+                <form id="partnership-form">
+                    <div class="form-group">
+                        <label for="name" data-i18n="formNameLabel">Name</label>
+                        <input type="text" id="name" name="name" required data-i18n-placeholder="formNamePlaceholder">
+                        <div class="error-message" data-error-for="name"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email" data-i18n="formEmailLabel">Email</label>
+                        <input type="email" id="email" name="email" required data-i18n-placeholder="formEmailPlaceholder">
+                        <div class="error-message" data-error-for="email"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="message" data-i18n="formMessageLabel">Message</label>
+                        <textarea id="message" name="message" required data-i18n-placeholder="formMessagePlaceholder"></textarea>
+                        <div class="error-message" data-error-for="message"></div>
+                    </div>
+                    <button type="submit" data-i18n="formSubmitButton">Submit</button>
+                </form>
+            </div>
+        `;
+
+        this.shadowRoot.getElementById('partnership-form').addEventListener('submit', this.handleSubmit.bind(this));
+        // Initial i18n update for placeholders
+        this.updateI18nPlaceholders();
+    }
+
+    updateI18nPlaceholders() {
+        this.shadowRoot.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            el.placeholder = t(el.dataset.i18nPlaceholder);
+        });
+        this.shadowRoot.querySelector('[data-i18n="formTitle"]').textContent = t('formTitle');
+        this.shadowRoot.querySelector('[data-i18n="formNameLabel"]').textContent = t('formNameLabel');
+        this.shadowRoot.querySelector('[data-i18n="formEmailLabel"]').textContent = t('formEmailLabel');
+        this.shadowRoot.querySelector('[data-i18n="formMessageLabel"]').textContent = t('formMessageLabel');
+        this.shadowRoot.querySelector('[data-i18n="formSubmitButton"]').textContent = t('formSubmitButton');
+    }
+
+    async handleSubmit(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+        const submitButton = this.shadowRoot.querySelector('button[type="submit"]');
+
+        this.clearErrors();
+
+        let isValid = true;
+        // Simple client-side validation
+        if (!formData.get('name')) {
+            this.showError('name', t('formValidationErrorName'));
+            isValid = false;
+        }
+        if (!formData.get('email') || !this.isValidEmail(formData.get('email'))) {
+            this.showError('email', t('formValidationErrorEmail'));
+            isValid = false;
+        }
+        if (!formData.get('message')) {
+            this.showError('message', t('formValidationErrorRequired'));
+            isValid = false;
+        }
+
+        if (!isValid) {
+            this.dispatchEvent(new CustomEvent('show-toast', { detail: t('formValidationErrorGeneric'), bubbles: true, composed: true }));
+            return;
+        }
+
+        submitButton.disabled = true;
+
+        try {
+            const response = await fetch(this.formspreeEndpoint, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                form.reset();
+                this.dispatchEvent(new CustomEvent('show-toast', { detail: t('formSubmitSuccess'), bubbles: true, composed: true }));
+            } else {
+                const data = await response.json();
+                if (data.errors) {
+                    data.errors.forEach(error => {
+                        this.showError(error.field, error.message);
+                    });
+                } else {
+                    this.dispatchEvent(new CustomEvent('show-toast', { detail: t('formSubmitError'), bubbles: true, composed: true }));
+                }
+            }
+        } catch (error) {
+            console.error('Form submission error:', error);
+            this.dispatchEvent(new CustomEvent('show-toast', { detail: t('formSubmitError'), bubbles: true, composed: true }));
+        } finally {
+            submitButton.disabled = false;
+        }
+    }
+
+    isValidEmail(email) {
+        // Basic email regex
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    }
+
+    showError(field, message) {
+        const errorElement = this.shadowRoot.querySelector(`[data-error-for="${field}"]`);
+        if (errorElement) {
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    clearErrors() {
+        this.shadowRoot.querySelectorAll('.error-message').forEach(el => {
+            el.textContent = '';
+            el.style.display = 'none';
+        });
+    }
+}
+
+customElements.define('partnership-form', PartnershipForm);
+
 
 // =================================================================================
 // Main App Logic
@@ -335,10 +554,12 @@ function updateUI() {
         el.placeholder = t(el.dataset.i18nPlaceholder);
     });
 
-    // Re-render components
+    // Re-render components (Shadow DOM components manage their own i18n after initial render)
+    // For custom elements, calling render() updates their internal Shadow DOM
     document.querySelector('menu-recommender')?.render();
     document.querySelector('menu-adder')?.render();
     document.querySelector('menu-list')?.render();
+    document.querySelector('partnership-form')?.updateI18nPlaceholders(); // Call specific update method for form
 }
 
 document.addEventListener('DOMContentLoaded', () => {

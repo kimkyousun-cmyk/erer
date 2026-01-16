@@ -17,5 +17,19 @@
     "chinese": "Chinese",
     "japanese": "Japanese",
     "western": "Western",
-    "other": "Other"
+    "other": "Other",
+    "formTitle": "Partnership Inquiry",
+    "formNameLabel": "Name",
+    "formNamePlaceholder": "Your Name",
+    "formEmailLabel": "Email",
+    "formEmailPlaceholder": "example@email.com",
+    "formMessageLabel": "Message",
+    "formMessagePlaceholder": "Please write your inquiry.",
+    "formSubmitButton": "Send",
+    "formValidationErrorName": "Please enter your name.",
+    "formValidationErrorEmail": "Please enter a valid email address.",
+    "formValidationErrorRequired": "Please enter your message.",
+    "formValidationErrorGeneric": "There are errors in your form submission. Please fill in all required fields.",
+    "formSubmitSuccess": "Your inquiry has been sent successfully!",
+    "formSubmitError": "An error occurred during form submission. Please try again."
 }
