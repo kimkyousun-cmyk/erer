@@ -1,0 +1,21 @@
+{
+    "appTitle": "오늘 뭐 먹지?",
+    "recommendButton": "메뉴 추천",
+    "pressButton": "버튼을 눌러주세요",
+    "noRecommendations": "추천할 메뉴가 없습니다.",
+    "addMenuTitle": "새로운 메뉴 추가",
+    "addMenuPlaceholder": "예: 닭갈비",
+    "addButton": "추가",
+    "toastDuplicate": "이미 존재하는 메뉴입니다.",
+    "toastEnterMenu": "추가할 메뉴를 입력해주세요.",
+    "toastMenuAdded": "{menuName} 메뉴가 추가되었습니다!",
+    "toastMenuDeleted": "{menuName} 메뉴가 삭제되었습니다.",
+    "menuListTitle": "메뉴 목록",
+    "deleteConfirm": "{menuName} 메뉴를 정말 삭제하시겠습니까?",
+    "all": "All",
+    "korean": "한식",
+    "chinese": "중식",
+    "japanese": "일식",
+    "western": "양식",
+    "other": "기타"
+}

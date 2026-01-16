@@ -1,0 +1,21 @@
+{
+    "appTitle": "What to Eat Today?",
+    "recommendButton": "Recommend Menu",
+    "pressButton": "Press the button",
+    "noRecommendations": "No menu to recommend.",
+    "addMenuTitle": "Add New Menu",
+    "addMenuPlaceholder": "e.g., Chicken Galbi",
+    "addButton": "Add",
+    "toastDuplicate": "This menu already exists.",
+    "toastEnterMenu": "Please enter a menu to add.",
+    "toastMenuAdded": "Menu '{menuName}' has been added!",
+    "toastMenuDeleted": "Menu '{menuName}' has been deleted.",
+    "menuListTitle": "Menu List",
+    "deleteConfirm": "Are you sure you want to delete '{menuName}'?",
+    "all": "All",
+    "korean": "Korean",
+    "chinese": "Chinese",
+    "japanese": "Japanese",
+    "western": "Western",
+    "other": "Other"
+}
