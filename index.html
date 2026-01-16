@@ -19,8 +19,15 @@
         <h1>오늘 뭐 먹지?</h1>
         <menu-recommender></menu-recommender>
         <menu-adder></menu-adder>
+        <menu-list></menu-list>
     </div>
     <notification-toast></notification-toast>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script type="module">
+        import { firebaseConfig } from './firebase-config.js';
+        firebase.initializeApp(firebaseConfig);
+    </script>
     <script src="main.js" type="module" defer></script>
 </body>
 </html>
