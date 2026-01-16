@@ -1,13 +1,24 @@
+// =================================================================================
+// Data Store
+// =================================================================================
 
-import './menu-list.js';
-import { firebaseConfig } from './firebase-config.js';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs, addDoc, doc, deleteDoc, getDoc, query, where } from 'firebase/firestore';
+let menuItems = [
+    { id: 1, name: "피자", category: "양식" },
+    { id: 2, name: "햄버거", category: "양식" },
+    { id: 3, name: "초밥", category: "일식" },
+    { id: 4, name: "김치찌개", category: "한식" },
+    { id: 5, name: "파스타", category: "양식" },
+    { id: 6, name: "치킨", category: "한식" },
+    { id: 7, name: "떡볶이", category: "한식" },
+    { id: 8, name: "짜장면", category: "중식" },
+    { id: 9, name: "삼겹살", category: "한식" },
+    { id: 10, name: "부대찌개", category: "한식" }
+];
+let nextId = 11;
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const menuItemsCollection = collection(db, 'menuItems');
+// =================================================================================
+// Web Components
+// =================================================================================
 
 class NotificationToast extends HTMLElement {
     constructor() {
@@ -60,37 +71,14 @@ class MenuRecommender extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.selectedCategory = 'All';
-    this.menuItems = [];
-    this.loadMenuItems();
   }
-
-  async loadMenuItems() {
-    const querySnapshot = await getDocs(menuItemsCollection);
-    if (querySnapshot.empty) {
-        const defaultItems = [
-            { name: "피자", category: "양식" },
-            { name: "햄버거", category: "양식" },
-            { name: "초밥", category: "일식" },
-            { name: "김치찌개", category: "한식" },
-            { name: "파스타", category: "양식" },
-            { name: "치킨", category: "한식" },
-            { name: "떡볶이", category: "한식" },
-            { name: "짜장면", category: "중식" },
-            { name: "삼겹살", category: "한식" },
-            { name: "부대찌개", category: "한식" }
-        ];
-        for (const item of defaultItems) {
-            await addDoc(menuItemsCollection, item);
-        }
-        this.menuItems = defaultItems.map(item => ({ ...item, id: doc.id }));
-    } else {
-        this.menuItems = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-    }
-    this.render();
+  
+  connectedCallback() {
+      this.render();
   }
 
   render() {
-    const categories = ['All', ...new Set(this.menuItems.map(item => item.category))];
+    const categories = ['All', ...new Set(menuItems.map(item => item.category))];
     this.shadowRoot.innerHTML = `
       <style>
         @keyframes spin {
@@ -197,42 +185,37 @@ class MenuRecommender extends HTMLElement {
         this.render();
     }
 
-  recommendMenu() {
-    const menuDisplay = this.shadowRoot.getElementById('menu-display');
-    menuDisplay.innerHTML = `<p>🤔</p>`;
-    menuDisplay.classList.add('spinning');
+    recommendMenu() {
+        const menuDisplay = this.shadowRoot.getElementById('menu-display');
+        menuDisplay.innerHTML = `<p>🤔</p>`;
+        menuDisplay.classList.add('spinning');
 
-    setTimeout(() => {
-        const filteredItems = this.selectedCategory === 'All' 
-            ? this.menuItems 
-            : this.menuItems.filter(item => item.category === this.selectedCategory);
-        
-        if (filteredItems.length === 0) {
-            menuDisplay.innerHTML = `<p>추천할 메뉴가 없습니다.</p>`;
-        } else {
-            const randomIndex = Math.floor(Math.random() * filteredItems.length);
-            menuDisplay.innerHTML = `<p>${filteredItems[randomIndex].name}</p>`;
-        }
-        menuDisplay.classList.remove('spinning');
-    }, 1000);
-  }
-
-    addMenuItem(item) {
-        this.menuItems.push(item);
-        this.render();
-    }
-
-    deleteMenuItem(id) {
-        this.menuItems = this.menuItems.filter(item => item.id !== id);
-        this.render();
+        setTimeout(() => {
+            const filteredItems = this.selectedCategory === 'All' 
+                ? menuItems 
+                : menuItems.filter(item => item.category === this.selectedCategory);
+            
+            if (filteredItems.length === 0) {
+                menuDisplay.innerHTML = `<p>추천할 메뉴가 없습니다.</p>`;
+            } else {
+                const randomIndex = Math.floor(Math.random() * filteredItems.length);
+                menuDisplay.innerHTML = `<p>${filteredItems[randomIndex].name}</p>`;
+            }
+            menuDisplay.classList.remove('spinning');
+        }, 1000);
     }
 }
+
+customElements.define('menu-recommender', MenuRecommender);
 
 class MenuAdder extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
-    this.render();
+  }
+
+  connectedCallback() {
+      this.render();
   }
 
   render() {
@@ -301,30 +284,138 @@ class MenuAdder extends HTMLElement {
     this.shadowRoot.getElementById('add-menu-btn').addEventListener('click', () => this.addMenu());
   }
 
-  async addMenu() {
+  addMenu() {
     const input = this.shadowRoot.getElementById('new-menu-input');
     const categorySelect = this.shadowRoot.getElementById('category-select');
     const newMenuName = input.value.trim();
     const newMenuCategory = categorySelect.value;
     if (newMenuName) {
-        const q = query(menuItemsCollection, where("name", "==", newMenuName));
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            const docRef = await addDoc(menuItemsCollection, { name: newMenuName, category: newMenuCategory });
-            this.dispatchEvent(new CustomEvent('menu-added', { detail: { id: docRef.id, name: newMenuName, category: newMenuCategory } }));
+        const isDuplicate = menuItems.some(item => item.name === newMenuName);
+        if (!isDuplicate) {
+            const newItem = { id: nextId++, name: newMenuName, category: newMenuCategory };
+            this.dispatchEvent(new CustomEvent('menu-added', { detail: newItem, bubbles: true, composed: true }));
             input.value = '';
         } else {
-            this.dispatchEvent(new CustomEvent('show-toast', { detail: "이미 존재하는 메뉴입니다." }));
+            this.dispatchEvent(new CustomEvent('show-toast', { detail: "이미 존재하는 메뉴입니다.", bubbles: true, composed: true }));
         }
     } else {
-        this.dispatchEvent(new CustomEvent('show-toast', { detail: "추가할 메뉴를 입력해주세요." }));
+        this.dispatchEvent(new CustomEvent('show-toast', { detail: "추가할 메뉴를 입력해주세요.", bubbles: true, composed: true }));
     }
   }
 }
 
-customElements.define('menu-recommender', MenuRecommender);
 customElements.define('menu-adder', MenuAdder);
 
+class MenuList extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+    }
+
+    connectedCallback() {
+        this.render();
+    }
+
+    render() {
+        const menuItemsByCategory = menuItems.reduce((acc, item) => {
+            if (!acc[item.category]) {
+                acc[item.category] = [];
+            }
+            acc[item.category].push(item);
+            return acc;
+        }, {});
+
+        this.shadowRoot.innerHTML = `
+            <style>
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+                .fade-in {
+                    animation: fadeIn 0.5s ease-in-out;
+                }
+                .fade-out {
+                    animation: fadeOut 0.5s ease-in-out;
+                }
+                .card {
+                    background: var(--card-background);
+                    border-radius: 16px;
+                    padding: 24px;
+                    box-shadow: 0 8px 32px var(--shadow-color);
+                    text-align: left;
+                    margin-top: 20px;
+                    grid-column: 1 / -1;
+                }
+                h3 {
+                    color: var(--primary-color);
+                    margin-top: 0;
+                    border-bottom: 2px solid var(--shadow-color);
+                    padding-bottom: 10px;
+                }
+                ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                li {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 8px 0;
+                    color: var(--text-color);
+                }
+                .delete-btn {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    color: var(--accent-color);
+                    font-size: 16px;
+                }
+            </style>
+            <div class="card">
+                <h2>메뉴 목록</h2>
+                ${Object.keys(menuItemsByCategory).map(category => `
+                    <div>
+                        <h3>${category}</h3>
+                        <ul data-category="${category}">
+                            ${menuItemsByCategory[category].map(item => `
+                                <li class="fade-in" data-id="${item.id}">
+                                    <span>${item.name}</span>
+                                    <button class="delete-btn" data-id="${item.id}" data-name="${item.name}">&times;</button>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+
+        this.shadowRoot.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.deleteMenu(e.currentTarget.dataset.id, e.currentTarget.dataset.name));
+        });
+    }
+
+    deleteMenu(id, name) {
+        if (confirm(`"${name}" 메뉴를 정말 삭제하시겠습니까?`)) {
+            const listItem = this.shadowRoot.querySelector(`li[data-id="${id}"]`);
+            listItem.classList.add('fade-out');
+            setTimeout(() => {
+                this.dispatchEvent(new CustomEvent('menu-deleted', { detail: { id: parseInt(id), name }, bubbles: true, composed: true }));
+            }, 500);
+        }
+    }
+}
+
+customElements.define('menu-list', MenuList);
+
+
+// =================================================================================
+// Main App Logic
+// =================================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     const recommender = document.querySelector('menu-recommender');
@@ -344,23 +435,26 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('theme', newTheme);
     });
 
-    if (adder && recommender && toast && menuList) {
-        adder.addEventListener('menu-added', event => {
-            recommender.addMenuItem(event.detail);
-            menuList.addMenuItem(event.detail);
-            toast.show(`"${event.detail.name}" 메뉴가 추가되었습니다!`);
-        });
+    // Centralized event listener
+    document.addEventListener('show-toast', event => {
+        toast.show(event.detail);
+    });
 
-        adder.addEventListener('show-toast', event => {
-            toast.show(event.detail);
-        });
+    document.addEventListener('menu-added', event => {
+        menuItems.push(event.detail);
+        recommender.render();
+        menuList.render();
+        toast.show(`"${event.detail.name}" 메뉴가 추가되었습니다!`);
+    });
 
-        document.addEventListener('menu-deleted', async event => {
-            await deleteDoc(doc(db, "menuItems", event.detail.id));
-            recommender.deleteMenuItem(event.detail.id);
-            toast.show(`"${event.detail.name}" 메뉴가 삭제되었습니다.`);
-        });
-    } else {
-        console.error('One or more components are missing from the DOM.');
-    }
+    document.addEventListener('menu-deleted', event => {
+        menuItems = menuItems.filter(item => item.id !== event.detail.id);
+        recommender.render();
+        menuList.render();
+        toast.show(`"${event.detail.name}" 메뉴가 삭제되었습니다.`);
+    });
+    
+    // Initial render
+    recommender.render();
+    menuList.render();
 });
