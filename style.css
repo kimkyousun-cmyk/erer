@@ -110,6 +110,15 @@ h1 {
     text-align: left;
 }
 
+#disqus_thread {
+    min-height: 320px;
+}
+
+[data-theme='dark'] .comments-section {
+    background: #f7f7f7;
+    color: #1a1a1a;
+}
+
 /* Responsive Design */
     @media (max-width: 768px) {
         .container {
