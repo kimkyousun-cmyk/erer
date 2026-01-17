@@ -101,6 +101,15 @@ h1 {
     margin-bottom: 20px;
 }
 
+.comments-section {
+    grid-column: 1 / -1;
+    background: var(--card-background);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    padding: 24px;
+    text-align: left;
+}
+
 /* Responsive Design */
     @media (max-width: 768px) {
         .container {

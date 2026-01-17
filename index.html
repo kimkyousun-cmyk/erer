@@ -28,10 +28,27 @@
         <menu-adder></menu-adder>
         <menu-list></menu-list>
         <partnership-form></partnership-form>
+        <section class="comments-section" aria-label="Disqus 댓글">
+            <div id="disqus_thread"></div>
+        </section>
     </div>
     <notification-toast></notification-toast>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="main.js" type="module" defer></script>
+    <script>
+        var disqus_config = function () {
+            this.page.url = window.location.href;
+            this.page.identifier = 'home';
+        };
+        (function () {
+            var d = document;
+            var s = d.createElement('script');
+            s.src = 'https://YOUR_DISQUS_SHORTNAME.disqus.com/embed.js';
+            s.setAttribute('data-timestamp', Date.now().toString());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>댓글을 보려면 JavaScript를 활성화해 주세요.</noscript>
 </body>
 </html>
