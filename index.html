@@ -29,7 +29,18 @@
         <menu-list></menu-list>
         <partnership-form></partnership-form>
         <section class="comments-section" aria-label="Disqus 댓글">
+            <div class="comments-header">
+                <div>
+                    <h2 class="comments-title">댓글</h2>
+                    <p class="comments-subtitle">질문, 추천, 의견을 남겨주세요.</p>
+                </div>
+                <div class="comments-actions">
+                    <a class="comments-link" href="#disqus_thread">댓글로 이동</a>
+                    <button class="comments-button" id="comments-refresh" type="button">댓글 새로고침</button>
+                </div>
+            </div>
             <div id="disqus_thread"></div>
+            <p class="comments-loading" id="comments-loading">댓글을 불러오는 중...</p>
         </section>
     </div>
     <notification-toast></notification-toast>

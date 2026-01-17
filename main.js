@@ -569,6 +569,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuList = document.querySelector('menu-list');
     const themeToggle = document.getElementById('theme-toggle');
     const langSelect = document.getElementById('lang-select');
+    const commentsRefresh = document.getElementById('comments-refresh');
+    const commentsLoading = document.getElementById('comments-loading');
+    const disqusThread = document.getElementById('disqus_thread');
     const htmlEl = document.documentElement;
 
     // Theme setup
@@ -579,6 +582,36 @@ document.addEventListener('DOMContentLoaded', () => {
         htmlEl.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
     });
+
+    if (commentsRefresh) {
+        commentsRefresh.addEventListener('click', () => {
+            if (window.DISQUS) {
+                window.DISQUS.reset({
+                    reload: true,
+                    config: window.disqus_config
+                });
+            } else {
+                window.location.reload();
+            }
+        });
+    }
+
+    if (disqusThread && commentsLoading) {
+        const hideLoading = () => {
+            commentsLoading.style.display = 'none';
+        };
+        if (disqusThread.querySelector('iframe')) {
+            hideLoading();
+        } else {
+            const observer = new MutationObserver(() => {
+                if (disqusThread.querySelector('iframe')) {
+                    hideLoading();
+                    observer.disconnect();
+                }
+            });
+            observer.observe(disqusThread, { childList: true, subtree: true });
+        }
+    }
 
     // I18n setup
     langSelect.addEventListener('change', (e) => {
