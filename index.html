@@ -37,9 +37,12 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="main.js" type="module" defer></script>
     <script>
+        var disqusCanonicalBase = 'https://1ba5bb33.menu-piker.pages.dev';
         var disqus_config = function () {
-            this.page.url = 'https://1ba5bb33.menu-piker.pages.dev/';
-            this.page.identifier = 'home';
+            var path = window.location.pathname || '/';
+            this.page.url = disqusCanonicalBase + path;
+            this.page.identifier = 'menu-piker' + path;
+            this.page.title = 'menu-piker';
         };
         (function () {
             var d = document;
