@@ -570,6 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
     const langSelect = document.getElementById('lang-select');
     const commentsRefresh = document.getElementById('comments-refresh');
+    const commentsOpen = document.getElementById('comments-open');
     const commentsLoading = document.getElementById('comments-loading');
     const disqusThread = document.getElementById('disqus_thread');
     const htmlEl = document.documentElement;
@@ -594,6 +595,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.location.reload();
             }
         });
+    }
+
+    if (commentsOpen && window.disqusShortname && window.disqusThreadId) {
+        commentsOpen.href = `https://disqus.com/home/discussion/${window.disqusShortname}/${window.disqusThreadId}/`;
     }
 
     if (disqusThread && commentsLoading) {

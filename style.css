@@ -101,6 +101,71 @@ h1 {
     margin-bottom: 20px;
 }
 
+.section-nav {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.section-nav a {
+    text-decoration: none;
+    color: var(--text-color);
+    background: var(--card-background);
+    border-radius: 999px;
+    padding: 8px 14px;
+    border: 1px solid var(--shadow-color);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    font-size: 0.9rem;
+}
+
+.info-section {
+    grid-column: 1 / -1;
+    background: var(--card-background);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    padding: 24px;
+    text-align: left;
+}
+
+.section-title {
+    margin: 0 0 12px;
+    font-size: 1.5rem;
+}
+
+.section-lead {
+    margin: 0;
+    color: var(--text-color);
+    opacity: 0.8;
+    line-height: 1.6;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.info-card {
+    border-radius: 14px;
+    background: var(--background-color);
+    padding: 16px;
+    border: 1px solid var(--shadow-color);
+}
+
+.info-card h3 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+}
+
+.info-card p {
+    margin: 0;
+    opacity: 0.8;
+    line-height: 1.5;
+}
+
 .comments-section {
     grid-column: 1 / -1;
     background: var(--card-background);
@@ -176,17 +241,41 @@ h1 {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.comments-loading {
+    margin: 12px 0 0;
+    color: var(--text-color);
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.section-nav a:hover,
 .comments-link:hover,
 .comments-button:hover {
     transform: translateY(-1px);
     box-shadow: 0 8px 18px var(--shadow-color);
 }
 
-.comments-loading {
-    margin: 12px 0 0;
-    color: var(--text-color);
-    opacity: 0.7;
-    font-size: 0.9rem;
+.section-nav a {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.info-section a {
+    color: var(--primary-color);
+}
+
+[data-theme='dark'] .info-section {
+    background: #f7f7f7;
+    color: #1a1a1a;
+}
+
+[data-theme='dark'] .section-nav a {
+    background: #f7f7f7;
+    color: #1a1a1a;
+}
+
+[data-theme='dark'] .info-card {
+    background: #ffffff;
+    color: #1a1a1a;
 }
 
 /* Responsive Design */

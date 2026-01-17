@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://1ba5bb33.menu-piker.pages.dev/sitemap.xml

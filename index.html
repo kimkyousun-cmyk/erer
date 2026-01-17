@@ -4,12 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘 뭐 먹지?</title>
+    <meta name="description" content="오늘 뭐 먹지?는 사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 메뉴 추천/추가/목록 기능을 제공합니다.">
+    <meta name="robots" content="index,follow">
+    <meta name="theme-color" content="#FF6B6B">
     <meta name="google-adsense-account" content="ca-pub-8605190624516297">
+    <link rel="canonical" href="https://1ba5bb33.menu-piker.pages.dev/">
+    <meta property="og:title" content="오늘 뭐 먹지?">
+    <meta property="og:description" content="사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 메뉴 추천/추가/목록 기능을 제공합니다.">
+    <meta property="og:url" content="https://1ba5bb33.menu-piker.pages.dev/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="오늘 뭐 먹지?">
+    <meta property="og:locale" content="ko_KR">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="오늘 뭐 먹지?">
+    <meta name="twitter:description" content="사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 메뉴 추천/추가/목록 기능을 제공합니다.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8605190624516297" crossorigin="anonymous"></script>
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "오늘 뭐 먹지?",
+        "url": "https://1ba5bb33.menu-piker.pages.dev/",
+        "inLanguage": "ko-KR",
+        "description": "사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 메뉴 추천/추가/목록 기능을 제공합니다."
+    }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -26,11 +49,78 @@
                     </button>
                 </div>
             </div>
-            <h1 data-i18n="appTitle">오늘 뭐 먹지?</h1>        <menu-recommender></menu-recommender>
+            <h1 data-i18n="appTitle">오늘 뭐 먹지?</h1>
+            <nav class="section-nav" aria-label="페이지 섹션">
+                <a href="#about">소개</a>
+                <a href="#guide">이용 안내</a>
+                <a href="#value">콘텐츠 가치</a>
+                <a href="#policy">정책</a>
+                <a href="#comments">댓글</a>
+            </nav>
+        <menu-recommender></menu-recommender>
         <menu-adder></menu-adder>
         <menu-list></menu-list>
         <partnership-form></partnership-form>
-        <section class="comments-section" aria-label="Disqus 댓글">
+        <section class="info-section" id="about" aria-label="서비스 소개">
+            <h2 class="section-title">오늘 뭐 먹지?는 무엇인가요</h2>
+            <p class="section-lead">
+                매일의 식사 고민을 줄이기 위해, 사용자가 직접 추가한 메뉴 데이터와 추천 로직을 기반으로
+                실용적인 선택지를 제안합니다. 광고보다 콘텐츠를 우선하며, 짧고 명확한 흐름으로 원하는 정보를
+                빠르게 찾을 수 있게 구성했습니다.
+            </p>
+        </section>
+        <section class="info-section" id="guide" aria-label="이용 안내">
+            <h2 class="section-title">이용 안내</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>메뉴 추천</h3>
+                    <p>랜덤 추천과 필터링을 통해 지금 먹고 싶은 메뉴를 빠르게 찾을 수 있습니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>메뉴 추가</h3>
+                    <p>직접 메뉴를 등록하면 추천 결과가 더 풍부해집니다. 중복 메뉴는 자동으로 걸러집니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>파트너 제안</h3>
+                    <p>제휴 문의는 페이지 내 파트너 폼을 통해 접수되며, 확인 후 개별 회신합니다.</p>
+                </div>
+            </div>
+        </section>
+        <section class="info-section" id="value" aria-label="콘텐츠 가치">
+            <h2 class="section-title">왜 이 사이트가 유용한가요</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>중복 없는 데이터</h3>
+                    <p>유사한 메뉴를 과도하게 나열하지 않고, 핵심 선택지만 제공합니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>탐색이 쉬운 구조</h3>
+                    <p>추천 → 추가 → 목록 흐름으로 구성되어, 원하는 기능으로 빠르게 이동합니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>사용자 중심 설계</h3>
+                    <p>광고는 콘텐츠를 보조하는 위치에 배치되며, 주요 기능 사용성을 해치지 않습니다.</p>
+                </div>
+            </div>
+        </section>
+        <section class="info-section" id="policy" aria-label="정책">
+            <h2 class="section-title">운영 정책</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>개인정보 처리</h3>
+                    <p>서비스 운영에 필요한 최소한의 정보만 처리하며, 불필요한 개인정보 수집을 지양합니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>콘텐츠 품질</h3>
+                    <p>중복 콘텐츠를 줄이고, 실제 사용에 도움이 되는 메뉴 중심 정보를 제공합니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>광고 정책</h3>
+                    <p>광고는 콘텐츠와 균형을 이루도록 배치하며, 사용자의 탐색을 방해하지 않습니다.</p>
+                </div>
+            </div>
+        </section>
+        <section class="comments-section" id="comments" aria-label="Disqus 댓글">
             <div class="comments-header">
                 <div>
                     <h2 class="comments-title">댓글</h2>
@@ -38,6 +128,7 @@
                 </div>
                 <div class="comments-actions">
                     <a class="comments-link" href="#disqus_thread">댓글로 이동</a>
+                    <a class="comments-link" id="comments-open" target="_blank" rel="noopener">새 창에서 댓글</a>
                     <button class="comments-button" id="comments-refresh" type="button">댓글 새로고침</button>
                 </div>
             </div>
@@ -50,12 +141,14 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="main.js" type="module" defer></script>
     <script>
-        var disqusCanonicalBase = 'https://1ba5bb33.menu-piker.pages.dev';
+        window.disqusShortname = 'erer-6';
+        window.disqusThreadId = 'menu-piker-home';
+        window.disqusCanonicalBase = 'https://1ba5bb33.menu-piker.pages.dev';
+        window.disqusPageUrl = window.disqusCanonicalBase + '/';
         var disqus_config = function () {
-            var path = window.location.pathname || '/';
-            this.page.url = disqusCanonicalBase + path;
-            this.page.identifier = 'menu-piker' + path;
-            this.page.title = 'menu-piker';
+            this.page.url = window.disqusPageUrl;
+            this.page.identifier = window.disqusThreadId;
+            this.page.title = '오늘 뭐 먹지?';
         };
         (function () {
             var d = document;
