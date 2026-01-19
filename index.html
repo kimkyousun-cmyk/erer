@@ -9,18 +9,23 @@
     <meta name="theme-color" content="#FF6B6B">
     <meta name="google-adsense-account" content="ca-pub-8605190624516297">
     <link rel="canonical" href="https://1ba5bb33.menu-piker.pages.dev/">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <meta property="og:title" content="오늘 뭐 먹지?">
     <meta property="og:description" content="사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 메뉴 추천/추가/목록 기능을 제공합니다.">
     <meta property="og:url" content="https://1ba5bb33.menu-piker.pages.dev/">
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="오늘 뭐 먹지?">
     <meta property="og:locale" content="ko_KR">
+    <meta property="og:image" content="https://1ba5bb33.menu-piker.pages.dev/og-image.svg">
+    <meta property="og:image:type" content="image/svg+xml">
+    <meta property="og:image:alt" content="오늘 뭐 먹지? 메뉴 추천 서비스">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="오늘 뭐 먹지?">
     <meta name="twitter:description" content="사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 메뉴 추천/추가/목록 기능을 제공합니다.">
+    <meta name="twitter:image" content="https://1ba5bb33.menu-piker.pages.dev/og-image.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Hahmlet:wght@500;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8605190624516297" crossorigin="anonymous"></script>
     <script type="application/ld+json">
@@ -35,8 +40,30 @@
     </script>
 </head>
 <body>
-    <div class="container">
+    <main class="container">
             <div class="header-controls">
+                <div class="region-switcher">
+                    <label for="region-select" data-i18n="regionLabel">지역</label>
+                    <select id="region-select">
+                        <option value="seoul">서울</option>
+                        <option value="busan">부산</option>
+                        <option value="daegu">대구</option>
+                        <option value="incheon">인천</option>
+                        <option value="gwangju">광주</option>
+                        <option value="daejeon">대전</option>
+                        <option value="ulsan">울산</option>
+                        <option value="sejong">세종</option>
+                        <option value="gyeonggi">경기</option>
+                        <option value="gangwon">강원</option>
+                        <option value="chungbuk">충북</option>
+                        <option value="chungnam">충남</option>
+                        <option value="jeonbuk">전북</option>
+                        <option value="jeonnam">전남</option>
+                        <option value="gyeongbuk">경북</option>
+                        <option value="gyeongnam">경남</option>
+                        <option value="jeju">제주</option>
+                    </select>
+                </div>
                 <div class="lang-switcher">
                     <select id="lang-select">
                         <option value="ko">한국어</option>
@@ -50,13 +77,150 @@
                 </div>
             </div>
             <h1 data-i18n="appTitle">오늘 뭐 먹지?</h1>
+            <section class="hero" aria-label="서비스 핵심 요약">
+                <div class="hero-content">
+                    <p class="hero-eyebrow">식사 결정에 필요한 정보를 한 페이지에 정리했습니다.</p>
+                    <h2 class="hero-title">오늘의 선택을 빠르고 확실하게 만드는 메뉴 가이드</h2>
+                    <p class="hero-lead">
+                        메뉴 추천은 물론, 예산과 시간, 컨디션에 맞춘 큐레이션과 주간 플랜까지 제공합니다.
+                        사용자가 직접 추가하는 데이터로 더 생생하고 현실적인 선택지를 쌓아가며,
+                        불필요한 정보 없이 바로 사용할 수 있는 콘텐츠를 우선합니다.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="hero-pill" href="#core-guide">핵심 가이드 보기</a>
+                        <a class="hero-pill" href="#weekly-plan">주간 플랜 보기</a>
+                        <a class="hero-pill" href="#operations">운영 정보</a>
+                    </div>
+                </div>
+                <div class="hero-highlights">
+                    <div class="highlight-card">
+                        <h3>의사결정 프레임</h3>
+                        <p>1분 안에 결정할 수 있도록 상황별 기준을 정리했습니다.</p>
+                    </div>
+                    <div class="highlight-card">
+                        <h3>실전 데이터</h3>
+                        <p>사용자 추가 메뉴를 기반으로 중복 없이 다양성을 유지합니다.</p>
+                    </div>
+                    <div class="highlight-card">
+                        <h3>주간 플래닝</h3>
+                        <p>바쁜 일정에도 균형 있는 선택을 돕는 주간 예시를 제공합니다.</p>
+                    </div>
+                </div>
+            </section>
             <nav class="section-nav" aria-label="페이지 섹션">
+                <a href="#core-guide">핵심 가이드</a>
+                <a href="#decision-grid">결정 기준</a>
+                <a href="#weekly-plan">주간 플랜</a>
+                <a href="#restaurants">맛집 리스트</a>
                 <a href="#about">소개</a>
                 <a href="#guide">이용 안내</a>
                 <a href="#value">콘텐츠 가치</a>
                 <a href="#policy">정책</a>
+                <a href="#faq">FAQ</a>
+                <a href="#operations">운영 정보</a>
+                <a href="/blog.html">블로그</a>
                 <a href="#comments">댓글</a>
             </nav>
+        <section class="content-section" id="core-guide" aria-label="핵심 가이드">
+            <h2 class="section-title">핵심 가이드: 오늘의 메뉴를 결정하는 3단계</h2>
+            <ol class="guide-steps">
+                <li>
+                    <strong>시간</strong>을 먼저 잡습니다. 15분 안에 해결해야 한다면 즉시 조리 가능한 메뉴,
+                    30분 이상 여유가 있다면 따뜻한 국물이나 구이류까지 확장합니다.
+                </li>
+                <li>
+                    <strong>예산</strong>을 기준으로 범위를 좁힙니다. 간단한 한 끼, 배달 가능 메뉴,
+                    외식의 구간을 구분해 불필요한 고민을 줄입니다.
+                </li>
+                <li>
+                    <strong>컨디션</strong>과 기분을 고려합니다. 든든함이 필요한 날, 가볍게 먹고 싶은 날,
+                    매운맛이 필요한 날 등 감정과 상황에 맞춘 기준을 제공합니다.
+                </li>
+            </ol>
+        </section>
+        <section class="content-section" id="decision-grid" aria-label="결정 기준">
+            <h2 class="section-title">상황별 추천 기준</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>바쁜 업무 중</h3>
+                    <p>간단한 덮밥, 샌드위치, 냉면 등 15분 내외로 준비 가능한 메뉴를 추천합니다.</p>
+                </div>
+                <div class="content-card">
+                    <h3>가족 식사</h3>
+                    <p>공유하기 좋은 찌개, 구이, 볶음 요리 위주로 구성해 만족도를 높입니다.</p>
+                </div>
+                <div class="content-card">
+                    <h3>다이어트/컨디션 관리</h3>
+                    <p>단백질과 채소 비중이 높은 메뉴를 우선 제안하고, 양을 조절하는 팁을 제공합니다.</p>
+                </div>
+                <div class="content-card">
+                    <h3>기분 전환</h3>
+                    <p>매운 음식, 새로운 맛, 익숙한 분식 등 기분을 전환할 수 있는 선택지를 제시합니다.</p>
+                </div>
+            </div>
+        </section>
+        <section class="content-section" id="weekly-plan" aria-label="주간 플랜">
+            <h2 class="section-title">주간 플랜 예시</h2>
+            <p class="section-lead">
+                요일별로 균형을 맞춘 간단한 플랜을 제안합니다. 필요에 따라 추천 기능을 활용해 메뉴를 교체할 수 있습니다.
+            </p>
+            <div class="plan-table">
+                <div class="plan-row">
+                    <span class="plan-day">월</span>
+                    <span class="plan-menu">닭가슴살 샐러드 + 미소된장국</span>
+                    <span class="plan-tag">가볍게 시작</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-day">화</span>
+                    <span class="plan-menu">김치찌개 + 계란말이</span>
+                    <span class="plan-tag">든든한 한 끼</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-day">수</span>
+                    <span class="plan-menu">우동 + 유부초밥</span>
+                    <span class="plan-tag">부드러운 메뉴</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-day">목</span>
+                    <span class="plan-menu">파스타 + 샐러드</span>
+                    <span class="plan-tag">균형</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-day">금</span>
+                    <span class="plan-menu">불고기 + 잡곡밥</span>
+                    <span class="plan-tag">에너지 보충</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-day">토</span>
+                    <span class="plan-menu">피자 + 샐러드</span>
+                    <span class="plan-tag">가벼운 외식</span>
+                </div>
+                <div class="plan-row">
+                    <span class="plan-day">일</span>
+                    <span class="plan-menu">된장찌개 + 생선구이</span>
+                    <span class="plan-tag">휴식 메뉴</span>
+                </div>
+            </div>
+        </section>
+        <section class="content-section" aria-label="영양 체크리스트">
+            <h2 class="section-title">균형 체크리스트</h2>
+            <ul class="checklist">
+                <li>탄수화물/단백질/채소가 모두 포함되었는지 확인합니다.</li>
+                <li>외식과 집밥 비율을 6:4로 유지해 과도한 염분을 줄입니다.</li>
+                <li>동일한 요리가 2일 연속 반복되지 않도록 조절합니다.</li>
+                <li>기분 전환이 필요한 날은 소소한 간식이나 디저트를 더해줍니다.</li>
+            </ul>
+        </section>
+        <section class="content-section" id="restaurants" aria-label="맛집 리스트">
+            <h2 class="section-title" id="restaurant-title">서울 맛집 리스트</h2>
+            <p class="section-lead">
+                사용자 지역 설정을 기준으로 추천 맛집을 보여줍니다. 지역을 변경하면 리스트가 함께 업데이트됩니다.
+            </p>
+            <div class="restaurant-grid" id="restaurant-list"></div>
+            <p class="restaurant-note" id="restaurant-note">
+                ※ 맛집 정보는 운영자가 직접 확인한 뒤 업데이트합니다. 실제 방문 전 최신 정보를 확인해 주세요.
+            </p>
+        </section>
         <menu-recommender></menu-recommender>
         <menu-adder></menu-adder>
         <menu-list></menu-list>
@@ -120,6 +284,54 @@
                 </div>
             </div>
         </section>
+        <section class="info-section" id="faq" aria-label="자주 묻는 질문">
+            <h2 class="section-title">FAQ</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>추천 결과는 어떻게 결정되나요?</h3>
+                    <p>카테고리 선택과 등록된 메뉴 데이터를 기반으로 균형 있게 랜덤 추천을 제공합니다.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>메뉴 추가는 어디에 사용되나요?</h3>
+                    <p>사용자가 추가한 메뉴는 즉시 목록과 추천에 반영되어 다른 사용자에게도 표시됩니다.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>광고는 어떻게 운영되나요?</h3>
+                    <p>콘텐츠 가독성을 해치지 않는 위치에 제한적으로 배치하며, 필수 콘텐츠와 분리합니다.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>문의는 어떻게 하나요?</h3>
+                    <p>페이지 내 파트너 폼을 통해 문의를 접수하며, 확인 후 개별 회신을 진행합니다.</p>
+                </div>
+            </div>
+        </section>
+        <section class="info-section" id="operations" aria-label="운영 정보">
+            <h2 class="section-title">운영 정보</h2>
+            <p class="section-lead">
+                이 사이트는 사용자 참여형 데이터와 편집 가이드라인을 함께 운영합니다. 콘텐츠 업데이트는
+                주 1회 진행되며, 모든 정보는 실제 식사 선택에 도움이 되는 범위 내에서 유지합니다.
+            </p>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>콘텐츠 원칙</h3>
+                    <p>중복을 줄이고, 현실적으로 선택 가능한 메뉴만 제공합니다. 과장된 표현은 지양합니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>데이터 검수</h3>
+                    <p>사용자 추가 메뉴는 카테고리 정합성 및 중복 여부를 확인해 반영합니다.</p>
+                </div>
+                <div class="info-card">
+                    <h3>문의 및 제휴</h3>
+                    <p>파트너 폼을 통해 접수된 문의를 확인한 뒤, 2영업일 내에 회신합니다.</p>
+                </div>
+            </div>
+            <div class="policy-links">
+                <a href="/about.html">소개 페이지</a>
+                <a href="/privacy.html">개인정보처리방침</a>
+                <a href="/terms.html">이용약관</a>
+                <a href="/blog.html">음식 블로그</a>
+            </div>
+        </section>
         <section class="comments-section" id="comments" aria-label="Disqus 댓글">
             <div class="comments-header">
                 <div>
@@ -135,7 +347,24 @@
             <div id="disqus_thread"></div>
             <p class="comments-loading" id="comments-loading">댓글을 불러오는 중...</p>
         </section>
-    </div>
+        <footer class="site-footer" aria-label="사이트 정보">
+            <div>
+                <h2 class="footer-title">오늘 뭐 먹지?</h2>
+                <p class="footer-lead">
+                    사용자 참여형 메뉴 추천 서비스로, 빠른 식사 선택을 돕는 콘텐츠를 제공합니다.
+                    더 나은 데이터 품질을 위해 주기적인 점검과 업데이트를 진행합니다.
+                </p>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">소개</a>
+                <a href="/privacy.html">개인정보처리방침</a>
+                <a href="/terms.html">이용약관</a>
+                <a href="/blog.html">블로그</a>
+                <a href="#comments">댓글</a>
+            </div>
+            <p class="footer-meta">© 2024 오늘 뭐 먹지? All rights reserved.</p>
+        </footer>
+    </main>
     <notification-toast></notification-toast>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>

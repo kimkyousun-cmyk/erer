@@ -31,5 +31,6 @@
     "formValidationErrorRequired": "Please enter your message.",
     "formValidationErrorGeneric": "There are errors in your form submission. Please fill in all required fields.",
     "formSubmitSuccess": "Your inquiry has been sent successfully!",
-    "formSubmitError": "An error occurred during form submission. Please try again."
+    "formSubmitError": "An error occurred during form submission. Please try again.",
+    "regionLabel": "Region"
 }

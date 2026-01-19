@@ -54,6 +54,70 @@ let menuItems = [
 let nextId = 11;
 
 // =================================================================================
+// Region & Restaurant Data
+// =================================================================================
+
+const regions = [
+    { value: 'seoul', label: '서울' },
+    { value: 'busan', label: '부산' },
+    { value: 'daegu', label: '대구' },
+    { value: 'incheon', label: '인천' },
+    { value: 'gwangju', label: '광주' },
+    { value: 'daejeon', label: '대전' },
+    { value: 'ulsan', label: '울산' },
+    { value: 'sejong', label: '세종' },
+    { value: 'gyeonggi', label: '경기' },
+    { value: 'gangwon', label: '강원' },
+    { value: 'chungbuk', label: '충북' },
+    { value: 'chungnam', label: '충남' },
+    { value: 'jeonbuk', label: '전북' },
+    { value: 'jeonnam', label: '전남' },
+    { value: 'gyeongbuk', label: '경북' },
+    { value: 'gyeongnam', label: '경남' },
+    { value: 'jeju', label: '제주' }
+];
+
+const restaurantsByRegion = {
+    seoul: [
+        {
+            name: '서울 대표 맛집 리스트는 운영자가 직접 조사 후 업데이트됩니다.',
+            area: '현재는 형식 안내용 예시입니다.',
+            specialty: '실제 리스트 제공 시 상호/대표 메뉴/주소를 반영합니다.'
+        }
+    ]
+};
+
+function renderRestaurants(regionKey) {
+    const restaurantList = document.getElementById('restaurant-list');
+    const restaurantTitle = document.getElementById('restaurant-title');
+    const restaurantNote = document.getElementById('restaurant-note');
+    if (!restaurantList || !restaurantTitle || !restaurantNote) {
+        return;
+    }
+
+    const region = regions.find(item => item.value === regionKey) || regions[0];
+    const list = restaurantsByRegion[regionKey] || [];
+
+    restaurantTitle.textContent = `${region.label} 맛집 리스트`;
+
+    if (list.length === 0) {
+        restaurantList.innerHTML = `<div class="restaurant-card"><h3>리스트 준비 중</h3><p class="restaurant-meta">해당 지역의 맛집 데이터는 곧 업데이트됩니다.</p></div>`;
+        restaurantNote.textContent = '※ 지역별 맛집 정보는 운영자가 직접 확인한 뒤 업데이트합니다.';
+        return;
+    }
+
+    restaurantList.innerHTML = list.map(item => `
+        <div class="restaurant-card">
+            <h3>${item.name}</h3>
+            <p class="restaurant-meta">${item.area}</p>
+            <p class="restaurant-meta">${item.specialty}</p>
+        </div>
+    `).join('');
+
+    restaurantNote.textContent = '※ 맛집 정보는 운영자가 직접 확인한 뒤 업데이트합니다. 실제 방문 전 최신 정보를 확인해 주세요.';
+}
+
+// =================================================================================
 // Web Components
 // =================================================================================
 
@@ -569,6 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const menuList = document.querySelector('menu-list');
     const themeToggle = document.getElementById('theme-toggle');
     const langSelect = document.getElementById('lang-select');
+    const regionSelect = document.getElementById('region-select');
     const commentsRefresh = document.getElementById('comments-refresh');
     const commentsOpen = document.getElementById('comments-open');
     const commentsLoading = document.getElementById('comments-loading');
@@ -627,6 +692,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialLang = ['en', 'ko'].includes(preferredLang) ? preferredLang : 'en';
     langSelect.value = initialLang;
     loadTranslations(initialLang);
+
+    if (regionSelect) {
+        const savedRegion = localStorage.getItem('preferredRegion') || 'seoul';
+        regionSelect.value = regions.some(item => item.value === savedRegion) ? savedRegion : 'seoul';
+        renderRestaurants(regionSelect.value);
+        regionSelect.addEventListener('change', (e) => {
+            const newRegion = e.target.value;
+            localStorage.setItem('preferredRegion', newRegion);
+            renderRestaurants(newRegion);
+        });
+    } else {
+        renderRestaurants('seoul');
+    }
     
 
     // Centralized event listener
