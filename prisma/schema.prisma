@@ -1,0 +1,466 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Issue {
+  id              String               @id @default(cuid())
+  slug            String               @unique
+  title           String
+  contextSummary  String
+  verdictLine     String
+  // SQLite dev compatibility: store enums as strings.
+  dominantEmotion String
+  angerScore      Int
+  humorScore      Int
+  divisionScore   Int
+  // SQLite dev compatibility: store tags as a delimited string.
+  tags            String
+  // SQLite dev compatibility: store status as a string.
+  // Allowed values: DRAFT | IN_REVIEW | PUBLISHED | ARCHIVED
+  status          String               @default("DRAFT")
+  // Safety gate: if true, draft must be manually edited before publish.
+  requiresEdit    Boolean              @default(false)
+  // Incremented on meaningful editorial changes/publish.
+  version         Int                  @default(1)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  publishedAt     DateTime?
+
+  timelineEvents  IssueTimelineEvent[]
+  reactions       ReactionSample[]
+  votes           Vote[]
+  generationLogs  IssueGenerationLog[]
+  shortsJobs      ShortsJob[]
+  auditLogs       AuditLog[]
+
+  // Phase 4: data quality, analytics, ranking, feedback, and i18n scaffolding.
+  qualityReports  QualityReport[]
+  events          Event[]
+  metricsDaily    IssueMetricsDaily[]
+  hides           Hide[]
+  feedbacks       IssueFeedback[]
+  revisions       IssueRevision[]
+  translations    IssueTranslation[]
+
+  @@index([status, publishedAt])
+  @@index([dominantEmotion])
+  @@index([publishedAt, createdAt])
+}
+
+model IssueTimelineEvent {
+  id      String @id @default(cuid())
+  issueId String
+  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  // SQLite dev compatibility: store phase as a string.
+  phase   String
+  label   String
+  detail  String
+  order   Int
+
+  @@index([issueId, order])
+  @@unique([issueId, order])
+}
+
+model ReactionSample {
+  id          String @id @default(cuid())
+  issueId     String
+  issue       Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  // SQLite dev compatibility: store emotion type as a string.
+  emotionType String
+  text        String
+  intensity   Int
+
+  @@index([issueId, emotionType])
+}
+
+model Vote {
+  id          String   @id @default(cuid())
+  issueId     String
+  issue       Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  sessionHash String
+  agree       Boolean?
+  justified   Boolean?
+  createdAt   DateTime @default(now())
+
+  @@index([issueId, createdAt])
+  @@unique([issueId, sessionHash])
+}
+
+model IssueGenerationLog {
+  id        String @id @default(cuid())
+  issueId   String?
+  issue     Issue? @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  inputText String
+  // SQLite dev compatibility: store output JSON as a string.
+  outputJson String
+  modelName  String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model DailyRadar {
+  id String @id @default(cuid())
+  // YYYY-MM-DD
+  date String @unique
+  // SQLite dev compatibility: store string[] as a delimited string.
+  topIssueIds   String
+  angerIndex    Int
+  humorIndex    Int
+  divisionIndex Int
+  summaryText   String
+  createdAt     DateTime @default(now())
+}
+
+model ShortsJob {
+  id      String @id @default(cuid())
+  issueId String
+  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  // Allowed values: QUEUED | RUNNING | SUCCEEDED | FAILED
+  status           String   @default("QUEUED")
+  externalRunId    String?
+  webhookUrl       String?
+  resultVideoUrl   String?
+  // SQLite dev compatibility: store JSON as a string.
+  resultAssetsJson String?
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  lastHeartbeatAt  DateTime?
+
+  @@index([issueId, createdAt])
+  @@index([status, updatedAt])
+}
+
+model AdminUser {
+  id    String @id @default(cuid())
+  email String @unique
+  // Allowed values: OWNER | EDITOR
+  role      String   @default("EDITOR")
+  createdAt DateTime @default(now())
+
+  auditLogs AuditLog[]
+  revisions IssueRevision[]
+}
+
+model AuditLog {
+  id           String    @id @default(cuid())
+  actorAdminId String?
+  actorAdmin   AdminUser? @relation(fields: [actorAdminId], references: [id], onDelete: SetNull)
+  action       String
+  entityType   String
+  entityId     String
+  issueId      String?
+  issue        Issue?    @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  // SQLite dev compatibility: store JSON as a string.
+  beforeJson String?
+  // SQLite dev compatibility: store JSON as a string.
+  afterJson  String?
+  createdAt  DateTime @default(now())
+  note       String?
+
+  @@index([entityType, entityId, createdAt])
+  @@index([action, createdAt])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  subscriptions Subscription[]
+  apiKeys       ApiKey[]
+  featureUsage  FeatureUsageDaily[]
+
+  // Phase 4: analytics, experiments, personalization signals, notifications.
+  events        Event[]
+  assignments   Assignment[]
+  hides         Hide[]
+  followTags    FollowTag[]
+  feedbacks     IssueFeedback[]
+  notifications Notification[]
+}
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Allowed values: FREE | PRO
+  plan String @default("FREE")
+  // Allowed values: ACTIVE | CANCELED | PAST_DUE
+  status           String   @default("ACTIVE")
+  currentPeriodEnd DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId, status])
+}
+
+model ApiKey {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  tokenHash String @unique
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  usageDaily ApiUsageDaily[]
+
+  @@index([userId, createdAt])
+}
+
+model ApiUsageDaily {
+  id       String @id @default(cuid())
+  apiKeyId String
+  apiKey   ApiKey @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+  // YYYY-MM-DD
+  date  String
+  count Int @default(0)
+
+  @@unique([apiKeyId, date])
+  @@index([date, count])
+}
+
+model FeatureUsageDaily {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  featureName String
+  // YYYY-MM-DD
+  date  String
+  count Int @default(0)
+
+  @@unique([userId, featureName, date])
+  @@index([featureName, date])
+}
+
+model AppSetting {
+  id                  String   @id @default(cuid())
+  n8nWebhookUrl       String?
+  shortsWebhookSecret String
+  siteName            String
+  brandColor          String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model SeedItem {
+  id   String @id @default(cuid())
+  text String
+  // Allowed values: MANUAL | USER_SUBMIT | RSS
+  sourceType String
+  // Allowed values: PENDING | USED | REJECTED
+  status       String   @default("PENDING")
+  createdAt    DateTime @default(now())
+  usedAt       DateTime?
+  rejectReason String?
+
+  @@index([status, createdAt])
+  @@index([sourceType, createdAt])
+}
+
+model JobRun {
+  id      String @id @default(cuid())
+  jobName String
+  // Allowed values: RUNNING | SUCCEEDED | FAILED
+  status    String
+  startedAt DateTime @default(now())
+  finishedAt DateTime?
+  errorMessage String?
+  // SQLite dev compatibility: store structured metadata as a string.
+  metaJson String?
+
+  @@index([jobName, startedAt])
+  @@index([status, startedAt])
+}
+
+// Phase 4: Data quality reports for gating and editor visibility.
+model QualityReport {
+  id      String @id @default(cuid())
+  issueId String
+  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+
+  qualityScore Int
+  // Allowed values: PASS | NEEDS_EDIT | BLOCK_PUBLISH
+  action      String
+  // SQLite dev compatibility: store string[] as a delimited string.
+  flags       String
+  explanation String
+  // Allowed values: ON_CREATE | ON_PUBLISH | NIGHTLY
+  runType    String
+  createdAt  DateTime @default(now())
+
+  @@index([issueId, createdAt])
+  @@index([action, createdAt])
+}
+
+// Phase 4: Privacy-preserving analytics events.
+model Event {
+  id          String   @id @default(cuid())
+  sessionHash String
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventName   String
+  issueId     String?
+  issue       Issue?   @relation(fields: [issueId], references: [id], onDelete: SetNull)
+  // SQLite dev compatibility: store string[] as a delimited string.
+  tags        String?
+  // SQLite dev compatibility: store JSON metadata as a string.
+  metadataJson String?
+  createdAt   DateTime @default(now())
+
+  @@index([eventName, createdAt])
+  @@index([issueId, createdAt])
+  @@index([sessionHash, createdAt])
+}
+
+// Phase 4: materialized daily metrics for ranking and reporting.
+model IssueMetricsDaily {
+  id      String @id @default(cuid())
+  issueId String
+  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  // YYYY-MM-DD
+  date String
+
+  impressions Int   @default(0)
+  opens       Int   @default(0)
+  shares      Int   @default(0)
+  votes       Int   @default(0)
+  exports     Int   @default(0)
+  trendScore  Float @default(0)
+
+  @@unique([issueId, date])
+  @@index([date, trendScore])
+}
+
+// Phase 4: lightweight experimentation framework.
+model Experiment {
+  id   String @id @default(cuid())
+  key  String @unique
+  // Allowed values: DRAFT | RUNNING | PAUSED | ENDED
+  status String @default("DRAFT")
+  // SQLite dev compatibility: store variants JSON as a string.
+  variantsJson String
+  // SQLite dev compatibility: store targeting JSON as a string.
+  targetingJson String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignments Assignment[]
+
+  @@index([status, updatedAt])
+}
+
+model Assignment {
+  id           String @id @default(cuid())
+  experimentId String
+  experiment   Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  sessionHash  String
+  userId       String?
+  user         User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  variantName  String
+  assignedAt   DateTime @default(now())
+
+  @@unique([experimentId, sessionHash])
+  @@index([experimentId, variantName])
+  @@index([userId, assignedAt])
+}
+
+// Phase 4: session/user-level negative signals.
+model Hide {
+  id          String   @id @default(cuid())
+  issueId     String
+  issue       Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  sessionHash String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([issueId, createdAt])
+  @@index([sessionHash, createdAt])
+  @@index([userId, createdAt])
+}
+
+// Phase 4: privacy-safe interest follows.
+model FollowTag {
+  id          String   @id @default(cuid())
+  tag         String
+  sessionHash String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([tag, createdAt])
+  @@index([sessionHash, createdAt])
+  @@index([userId, createdAt])
+}
+
+// Phase 4: explicit feedback loop signals.
+model IssueFeedback {
+  id          String   @id @default(cuid())
+  issueId     String
+  issue       Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  sessionHash String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  // Allowed values: CONFUSING | BIASED | LOW_QUALITY | REPETITIVE | GREAT
+  type      String
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([issueId, type, createdAt])
+  @@index([sessionHash, createdAt])
+  @@index([userId, createdAt])
+}
+
+// Phase 4: editorial revision tracking.
+model IssueRevision {
+  id            String   @id @default(cuid())
+  issueId       String
+  issue         Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  fromVersion   Int
+  toVersion     Int
+  diffSummary   String
+  editorAdminId String?
+  editorAdmin   AdminUser? @relation(fields: [editorAdminId], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  @@index([issueId, createdAt])
+  @@index([editorAdminId, createdAt])
+}
+
+// Phase 4: in-app notifications (vendor-neutral fallback).
+model Notification {
+  id      String @id @default(cuid())
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type    String
+  // SQLite dev compatibility: store JSON payload as a string.
+  payloadJson String?
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}
+
+// Phase 4: i18n-ready translation scaffolding.
+model IssueTranslation {
+  id      String @id @default(cuid())
+  issueId String
+  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  locale  String
+  title   String
+  contextSummary String
+  verdictLine    String
+  createdAt      DateTime @default(now())
+
+  @@unique([issueId, locale])
+  @@index([locale, createdAt])
+}

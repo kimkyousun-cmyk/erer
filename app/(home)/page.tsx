@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { IssueCard } from "@/components/IssueCard";
-import { listIssues } from "@/services/issueGenerator";
+import { IssueService } from "@/services/issues/issueService";
+import { FeedService } from "@/services/feed/feedService";
+import { ExperimentService } from "@/services/experiments/experimentService";
 
 export const metadata: Metadata = {
   title: "Emotion Radar — Trending Mood",
@@ -8,8 +10,22 @@ export const metadata: Metadata = {
     "Trending internet issues summarized emotionally: anger, humor, and division in one glance."
 };
 
-export default function HomePage() {
-  const issues = listIssues();
+export default async function HomePage() {
+  const [issues, layoutVariant] = await Promise.all([
+    (async () => {
+      try {
+        const params = new URLSearchParams({ mode: "trending", take: "24", skip: "0" });
+        const feed = await FeedService.getFeed(params);
+        return feed.issues;
+      } catch {
+        return IssueService.listIssues({ status: "PUBLISHED", take: 24 });
+      }
+    })(),
+    ExperimentService.getVariant("HOME_LAYOUT_DENSITY")
+  ]);
+
+  const compact = layoutVariant.active && layoutVariant.variant !== "control";
+  const gridGap = compact ? "gap-3" : "gap-4";
 
   return (
     <main className="space-y-8">
@@ -54,7 +70,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 ${gridGap}`}>
           {issues.map((issue) => (
             <IssueCard key={issue.slug} issue={issue} />
           ))}

@@ -49,6 +49,7 @@ function toSummary(seed: IssueSeed): IssueSummary {
   const analysis = analyzeEmotions(seed, { velocity, voteTilt: tilt });
 
   return {
+    id: seed.slug,
     slug: seed.slug,
     title: seed.title,
     context: seed.context,
@@ -81,6 +82,7 @@ export function getIssueDetail(slug: string): IssueDetail | null {
   const reactionCount = seed.tags.includes("ai") ? 10 : 8;
 
   return {
+    id: seed.slug,
     slug: seed.slug,
     title: seed.title,
     context: seed.context,
@@ -95,7 +97,8 @@ export function getIssueDetail(slug: string): IssueDetail | null {
     reactions: simulateReactions(seed, reactionCount),
     whyItBlewUp: whyItBlewUp(seed),
     whyPeopleDisagree: whyPeopleDisagree(seed),
-    communityPulse: toCommunityPulse(state)
+    communityPulse: toCommunityPulse(state),
+    shorts: null
   };
 }
 

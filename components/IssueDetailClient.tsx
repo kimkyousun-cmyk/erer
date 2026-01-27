@@ -5,6 +5,9 @@ import type { EmotionKey, EmotionScores, IssueDetail } from "@/lib/types";
 import { EmotionBar } from "@/components/EmotionBar";
 import { VerdictBadge } from "@/components/VerdictBadge";
 import { VotePanel } from "@/components/VotePanel";
+import { CreatorToolsPanel } from "@/components/CreatorToolsPanel";
+import { useTrackIssueOpen, useTrackScrollDepth } from "@/hooks/useTrackEvent";
+import { FeedbackPanel } from "@/components/FeedbackPanel";
 
 interface IssueDetailClientProps {
   issue: IssueDetail;
@@ -39,6 +42,8 @@ const reactionTone: Record<EmotionKey, string> = {
 export function IssueDetailClient({ issue }: IssueDetailClientProps) {
   const [scores, setScores] = useState(issue.scores);
   const summary = useMemo(() => emotionSummary(scores), [scores]);
+  useTrackIssueOpen(issue.id, issue.tags);
+  useTrackScrollDepth(issue.id, issue.tags);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
@@ -114,7 +119,22 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
       </div>
 
       <div className="space-y-4 lg:sticky lg:top-6">
-        <VotePanel slug={issue.slug} initialPulse={issue.communityPulse} onAdjustedScores={setScores} />
+        <VotePanel
+          slug={issue.slug}
+          issueId={issue.id}
+          tags={issue.tags}
+          initialPulse={issue.communityPulse}
+          onAdjustedScores={setScores}
+        />
+
+        <CreatorToolsPanel
+          issueId={issue.id}
+          slug={issue.slug}
+          tags={issue.tags}
+          shortsStatus={issue.shorts ?? null}
+        />
+
+        <FeedbackPanel issueId={issue.id} tags={issue.tags} />
 
         <section className="rounded-3xl border border-white/5 bg-panel/70 p-5 shadow-glow">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Premium Slot</div>

@@ -1,33 +1,119 @@
 import { NextResponse } from "next/server";
-import { seedIssues } from "@/data/seedIssues";
-import { analyzeEmotions } from "@/services/emotionAnalyzer";
-import { applyVote, getVoteState, toCommunityPulse, voteTilt } from "@/lib/voteStore";
-import type { VotePayload } from "@/lib/types";
+import { prisma } from "@/lib/db/prisma";
+import { isDemoMode } from "@/lib/demo";
+import { logger } from "@/lib/log";
+import { tokenBucket, rateLimitConfigs } from "@/lib/rateLimit";
+import { getRequestIp } from "@/lib/request";
+import { createRequestId } from "@/lib/requestId";
+import { getSessionHash } from "@/lib/security/session";
+import { votePayloadSchema } from "@/lib/validation/vote";
+import { applyVote, toCommunityPulse } from "@/lib/voteStore";
+import { VoteRepo } from "@/repositories/voteRepo";
+import { computeIssueScores } from "@/services/aggregation/issueAggregation";
+import { IssueService } from "@/services/issues/issueService";
+import { getIssueDetail as getSeedIssueDetail } from "@/services/issueGenerator";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as Partial<VotePayload>;
-  if (!body.slug || typeof body.agree !== "boolean" || typeof body.justified !== "boolean") {
-    return NextResponse.json({ error: "Invalid vote payload" }, { status: 400 });
+  const requestId = createRequestId();
+  const ip = getRequestIp(request.headers);
+  const limit = tokenBucket(`vote:${ip}`, rateLimitConfigs.voteSubmit);
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      {
+        error: "Too many votes. Please slow down.",
+        requestId,
+        retryAfterSeconds: limit.retryAfterSeconds
+      },
+      { status: 429 }
+    );
   }
 
-  const seed = seedIssues.find((issue) => issue.slug === body.slug);
-  if (!seed) {
-    return NextResponse.json({ error: "Issue not found" }, { status: 404 });
+  try {
+    const json = (await request.json()) as unknown;
+    const parsed = votePayloadSchema.safeParse(json);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: parsed.error.issues[0]?.message ?? "Invalid vote payload",
+          requestId
+        },
+        { status: 400 }
+      );
+    }
+
+    if (isDemoMode()) {
+      const seed = getSeedIssueDetail(parsed.data.slug);
+      if (!seed) {
+        return NextResponse.json({ error: "Issue not found", requestId }, { status: 404 });
+      }
+
+      const nextState = applyVote(parsed.data.slug, {
+        agree: parsed.data.agree,
+        justified: parsed.data.justified
+      });
+
+      return NextResponse.json({
+        slug: parsed.data.slug,
+        communityPulse: toCommunityPulse(nextState),
+        adjustedScores: seed.scores,
+        requestId,
+        mode: "demo"
+      });
+    }
+
+    const issue = await prisma.issue.findUnique({
+      where: { slug: parsed.data.slug },
+      select: {
+        id: true,
+        slug: true,
+        status: true,
+        angerScore: true,
+        humorScore: true,
+        divisionScore: true
+      }
+    });
+
+    if (!issue || issue.status !== "PUBLISHED") {
+      return NextResponse.json({ error: "Issue not found", requestId }, { status: 404 });
+    }
+
+    const sessionHash = getSessionHash();
+    await VoteRepo.upsertVote({
+      issueId: issue.id,
+      sessionHash,
+      agree: parsed.data.agree,
+      justified: parsed.data.justified
+    });
+
+    const agg = await computeIssueScores(issue);
+    IssueService.invalidateIssueCaches(issue.slug);
+
+    return NextResponse.json({
+      slug: issue.slug,
+      communityPulse: {
+        agree: agg.votePulse.agree,
+        disagree: agg.votePulse.disagree,
+        overreaction: agg.votePulse.overreaction,
+        justified: agg.votePulse.justified
+      },
+      adjustedScores: {
+        anger: agg.anger,
+        humor: agg.humor,
+        division: agg.division
+      },
+      requestId
+    });
+  } catch (err) {
+    logger.error("vote_api.failed", err, { requestId });
+    return NextResponse.json(
+      {
+        error: "Vote failed",
+        requestId
+      },
+      { status: 500 }
+    );
   }
-
-  applyVote(seed.slug, { agree: body.agree, justified: body.justified });
-  const state = getVoteState(seed.slug);
-  const tilt = voteTilt(state);
-  const analysis = analyzeEmotions(seed, {
-    velocity: seed.baselineVelocity,
-    voteTilt: tilt
-  });
-
-  return NextResponse.json({
-    slug: seed.slug,
-    communityPulse: toCommunityPulse(state),
-    adjustedScores: analysis.scores
-  });
 }

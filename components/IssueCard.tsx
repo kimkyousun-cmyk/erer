@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { IssueSummary } from "@/lib/types";
 import { EmotionBar } from "@/components/EmotionBar";
 import { VerdictBadge } from "@/components/VerdictBadge";
+import IssueCardTracker from "@/components/IssueCardTracker";
 
 interface IssueCardProps {
   issue: IssueSummary;
@@ -20,6 +21,7 @@ export function IssueCard({ issue }: IssueCardProps) {
       className="group block rounded-3xl border border-white/5 bg-panel/80 p-5 shadow-glow transition hover:-translate-y-0.5 hover:border-white/10"
       aria-label={`${issue.title} issue details`}
     >
+      <IssueCardTracker issueId={issue.id} tags={issue.tags} />
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div className="mb-2 flex flex-wrap gap-2">

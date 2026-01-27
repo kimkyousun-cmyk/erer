@@ -49,6 +49,7 @@ export interface ReactionSample {
 }
 
 export interface IssueSummary {
+  id: string;
   slug: string;
   title: string;
   context: string;
@@ -75,6 +76,12 @@ export interface IssueDetail extends IssueSummary {
     overreaction: number;
     justified: number;
   };
+  shorts?: {
+    status: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";
+    resultVideoUrl?: string | null;
+    updatedAt?: string | null;
+    externalRunId?: string | null;
+  } | null;
 }
 
 export interface VotePayload {

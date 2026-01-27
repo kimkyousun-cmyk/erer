@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { IssueDetailClient } from "@/components/IssueDetailClient";
-import { getAllSlugs, getIssueDetail } from "@/services/issueGenerator";
+import { getAllSlugs } from "@/services/issueGenerator";
+import { IssueService } from "@/services/issues/issueService";
+import { ExperimentService } from "@/services/experiments/experimentService";
+import { ShareButton } from "@/components/ShareButton";
+import { FollowTagToggle } from "@/components/FollowTagToggle";
 
 interface IssuePageProps {
   params: { slug: string };
@@ -13,8 +17,8 @@ export function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
-export function generateMetadata({ params }: IssuePageProps): Metadata {
-  const issue = getIssueDetail(params.slug);
+export async function generateMetadata({ params }: IssuePageProps): Promise<Metadata> {
+  const issue = await IssueService.getIssueDetailBySlug(params.slug);
   if (!issue) {
     return {
       title: "Issue Not Found"
@@ -22,6 +26,7 @@ export function generateMetadata({ params }: IssuePageProps): Metadata {
   }
 
   const url = `${siteUrl}/issue/${issue.slug}`;
+  const ogImage = `${siteUrl}/issue/${issue.slug}/opengraph-image`;
   const description = `${issue.verdict.label} — Anger ${issue.scores.anger}, Humor ${issue.scores.humor}, Division ${issue.scores.division}.`;
 
   return {
@@ -34,32 +39,48 @@ export function generateMetadata({ params }: IssuePageProps): Metadata {
       title: `${issue.title} · Emotion Radar`,
       description,
       url,
-      type: "article"
+      type: "article",
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: issue.title
+        }
+      ]
     },
     twitter: {
       card: "summary_large_image",
       title: `${issue.title} · Emotion Radar`,
-      description
+      description,
+      images: [ogImage]
     }
   };
 }
 
-export default function IssuePage({ params }: IssuePageProps) {
-  const issue = getIssueDetail(params.slug);
+export default async function IssuePage({ params }: IssuePageProps) {
+  const issue = await IssueService.getIssueDetailBySlug(params.slug);
   if (!issue) notFound();
+
+  const shareVariant = await ExperimentService.getVariant("SHARE_CTA_COPY");
+  const shareLabel =
+    shareVariant.variant === "punchy"
+      ? "Share Card"
+      : shareVariant.variant === "discuss"
+        ? "Share Vibe"
+        : "Share";
+  const issueUrl = `${siteUrl}/issue/${issue.slug}`;
 
   return (
     <main className="space-y-6">
       <header className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow sm:p-8">
-        <div className="mb-3 flex flex-wrap gap-2">
-          {issue.tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-muted"
-            >
-              {tag}
-            </span>
-          ))}
+        <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            {issue.tags.map((tag) => (
+              <FollowTagToggle key={tag} tag={tag} />
+            ))}
+          </div>
+          <ShareButton url={issueUrl} label={shareLabel} issueId={issue.id} tags={issue.tags} />
         </div>
         <h1 className="mb-3 max-w-4xl text-3xl font-semibold leading-[1.05] text-ink sm:text-5xl">
           {issue.title}

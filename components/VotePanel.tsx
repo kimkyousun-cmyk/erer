@@ -2,9 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { EmotionScores, IssueDetail } from "@/lib/types";
+import { trackClientEvent } from "@/lib/analytics/trackClient";
 
 interface VotePanelProps {
   slug: string;
+  issueId?: string;
+  tags?: string[];
   initialPulse: IssueDetail["communityPulse"];
   onAdjustedScores?: (scores: EmotionScores) => void;
   onPulse?: (pulse: IssueDetail["communityPulse"]) => void;
@@ -18,7 +21,7 @@ function storageKey(slug: string) {
   return `${STORAGE_PREFIX}${slug}`;
 }
 
-export function VotePanel({ slug, initialPulse, onAdjustedScores, onPulse }: VotePanelProps) {
+export function VotePanel({ slug, issueId, tags, initialPulse, onAdjustedScores, onPulse }: VotePanelProps) {
   const [pulse, setPulse] = useState(initialPulse);
   const [choice, setChoice] = useState<VoteChoice>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -75,13 +78,24 @@ export function VotePanel({ slug, initialPulse, onAdjustedScores, onPulse }: Vot
           setPulse(data.communityPulse);
           onAdjustedScores?.(data.adjustedScores);
           setStatus("done");
+          if (issueId) {
+            void trackClientEvent({
+              eventName: "VOTE_SUBMIT",
+              issueId,
+              tags,
+              metadata: {
+                agree: nextChoice.agree ? "1" : "0",
+                justified: nextChoice.justified ? "1" : "0"
+              }
+            });
+          }
         } catch (err) {
           if ((err as Error).name === "AbortError") return;
           setStatus("error");
         }
       }, 420);
     },
-    [onAdjustedScores, slug]
+    [issueId, onAdjustedScores, slug, tags]
   );
 
   const disabled = status === "sending";

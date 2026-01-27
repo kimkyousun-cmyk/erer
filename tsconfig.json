@@ -18,7 +18,9 @@
       "@/components/*": ["components/*"],
       "@/services/*": ["services/*"],
       "@/lib/*": ["lib/*"],
-      "@/data/*": ["data/*"]
+      "@/data/*": ["data/*"],
+      "@/repositories/*": ["repositories/*"],
+      "@/hooks/*": ["hooks/*"]
     },
     "types": ["node"]
   },
