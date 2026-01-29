@@ -16,6 +16,10 @@ function escapeHtml(input: string) {
     .replace(/'/g, "&#39;");
 }
 
+function safeJson(data: unknown) {
+  return JSON.stringify(data).replace(/<\//g, "<\\/");
+}
+
 function layout(title: string, description: string, body: string, extraHead = "") {
   return `<!doctype html>
 <html lang="en">
@@ -40,6 +44,7 @@ function layout(title: string, description: string, body: string, extraHead = ""
     <nav class="nav">
       <a href="/collections">Collections</a>
       <a href="/daily">Daily</a>
+      <a href="/search">Search</a>
       <a href="/about">About</a>
     </nav>
   </header>
@@ -55,19 +60,24 @@ function layout(title: string, description: string, body: string, extraHead = ""
 </html>`;
 }
 
+function emotionBars(scores: { anger: number; humor: number; division: number }) {
+  return `
+    <div class="bars">
+      <div><span>Anger</span><div class="bar"><div style="width:${scores.anger}%" class="bar-anger"></div></div></div>
+      <div><span>Humor</span><div class="bar"><div style="width:${scores.humor}%" class="bar-humor"></div></div></div>
+      <div><span>Division</span><div class="bar"><div style="width:${scores.division}%" class="bar-division"></div></div></div>
+    </div>`;
+}
+
 function issueCard(issue: ReturnType<typeof listIssues>[number]) {
   return `
-  <a class="card" href="/issue/${issue.slug}/">
+  <a class="card" href="/issue/${issue.slug}/" data-tags="${issue.tags.join(",")}">
     <div class="card-tags">${issue.tags
       .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
       .join(" ")}</div>
     <h3>${escapeHtml(issue.title)}</h3>
     <p>${escapeHtml(issue.context)}</p>
-    <div class="scores">
-      <div>Anger <strong>${issue.scores.anger}</strong></div>
-      <div>Humor <strong>${issue.scores.humor}</strong></div>
-      <div>Division <strong>${issue.scores.division}</strong></div>
-    </div>
+    ${emotionBars(issue.scores)}
     <div class="verdict">${escapeHtml(issue.verdict.label)}</div>
   </a>`;
 }
@@ -75,12 +85,30 @@ function issueCard(issue: ReturnType<typeof listIssues>[number]) {
 function renderHome() {
   const issues = listIssues();
   const top = issues.slice(0, 3);
+  const tags = Array.from(new Set(issues.flatMap((i) => i.tags))).slice(0, 10);
+
+  const webSiteJson = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Emotion Radar",
+    url: siteUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string"
+    }
+  };
+
   const body = `
   <section class="hero">
     <div>
       <div class="eyebrow">Emotion &gt; Information</div>
       <h1>Feel the Internet <span>before it explains itself.</span></h1>
       <p>Emotion Radar shows the mood: who is mad, who is laughing, and where the split lives.</p>
+      <div class="hero-actions">
+        <a class="button" href="/search">Explore moods</a>
+        <a class="button ghost" href="/collections">Browse collections</a>
+      </div>
     </div>
     <div class="pill-grid">
       <span>Anger</span>
@@ -95,16 +123,24 @@ function renderHome() {
     <div class="grid">${top.map(issueCard).join("\n")}</div>
   </section>
 
+  <section class="panel">
+    <h2>Hot Tags</h2>
+    <div class="tag-cloud">${tags.map((tag) => `<a class="tag" href="/search?tag=${tag}">${escapeHtml(tag)}</a>`).join(" ")}</div>
+  </section>
+
   <section>
     <h2>Trending Issues</h2>
     <div class="grid">${issues.map(issueCard).join("\n")}</div>
   </section>
   `;
 
+  const extraHead = `<script type="application/ld+json">${safeJson(webSiteJson)}</script>`;
+
   return layout(
     "Emotion Radar — Feel the Internet",
     "Trending internet issues summarized emotionally: anger, humor, and division.",
-    body
+    body,
+    extraHead
   );
 }
 
@@ -134,8 +170,6 @@ function renderIssue(slug: string) {
     }))
   };
 
-  const safeJson = (data: unknown) => JSON.stringify(data).replace(/<\//g, "<\\/");
-
   const extraHead = `
   <meta property="og:title" content="${escapeHtml(issue.title)}" />
   <meta property="og:description" content="${escapeHtml(issue.context)}" />
@@ -143,6 +177,8 @@ function renderIssue(slug: string) {
   <script type="application/ld+json">${safeJson(jsonLd)}</script>
   <script type="application/ld+json">${safeJson(faqJsonLd)}</script>
   `;
+
+  const shareUrl = `${siteUrl}/issue/${issue.slug}/`;
 
   const body = `
   <section class="issue-header">
@@ -162,11 +198,7 @@ function renderIssue(slug: string) {
 
   <section class="panel">
     <h2>Emotional Overview</h2>
-    <div class="scores">
-      <div>Anger <strong>${issue.scores.anger}</strong></div>
-      <div>Humor <strong>${issue.scores.humor}</strong></div>
-      <div>Division <strong>${issue.scores.division}</strong></div>
-    </div>
+    ${emotionBars(issue.scores)}
   </section>
 
   <section class="panel">
@@ -220,18 +252,11 @@ function renderIssue(slug: string) {
   <section class="panel">
     <h2>Share</h2>
     <div class="grid-two">
-      <a href="https://x.com/intent/tweet?text=${encodeURIComponent(issue.title)}&url=${encodeURIComponent(
-    `${siteUrl}/issue/${issue.slug}/`
-  )}" target="_blank" rel="noreferrer">Share on X</a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-    `${siteUrl}/issue/${issue.slug}/`
-  )}" target="_blank" rel="noreferrer">Share on Facebook</a>
-      <a href="https://wa.me/?text=${encodeURIComponent(
-    `${issue.title} — ${issue.verdict.label} ${siteUrl}/issue/${issue.slug}/`
-  )}" target="_blank" rel="noreferrer">Share on WhatsApp</a>
-      <a href="mailto:?subject=${encodeURIComponent(issue.title)}&body=${encodeURIComponent(
-    `${issue.verdict.label}\n\n${siteUrl}/issue/${issue.slug}/`
-  )}">Share by Email</a>
+      <a href="https://x.com/intent/tweet?text=${encodeURIComponent(issue.title)}&url=${encodeURIComponent(shareUrl)}" target="_blank" rel="noreferrer">Share on X</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}" target="_blank" rel="noreferrer">Share on Facebook</a>
+      <a href="https://wa.me/?text=${encodeURIComponent(`${issue.title} — ${issue.verdict.label} ${shareUrl}`)}" target="_blank" rel="noreferrer">Share on WhatsApp</a>
+      <a href="mailto:?subject=${encodeURIComponent(issue.title)}&body=${encodeURIComponent(`${issue.verdict.label}\n\n${shareUrl}`)}">Share by Email</a>
+      <button class="button" data-copy="${escapeHtml(shareUrl)}">Copy link</button>
     </div>
   </section>
   `;
@@ -287,6 +312,26 @@ function renderDaily() {
   return layout("Daily · Emotion Radar", "Daily mood digest.", body);
 }
 
+function renderSearch() {
+  const issues = listIssues();
+  const tags = Array.from(new Set(issues.flatMap((i) => i.tags))).slice(0, 12);
+  const body = `
+  <section class="panel">
+    <h1>Search</h1>
+    <p>Find issues by keyword or tag. Works offline.</p>
+    <div class="search-bar">
+      <input type="search" placeholder="Search issues" data-search />
+      <button class="button" data-search-clear>Clear</button>
+    </div>
+    <div class="tag-cloud">${tags.map((tag) => `<button class="tag" data-tag="${escapeHtml(tag)}">${escapeHtml(tag)}</button>`).join(" ")}</div>
+  </section>
+  <section>
+    <h2>Results</h2>
+    <div class="grid" data-search-results>${issues.map(issueCard).join("\n")}</div>
+  </section>`;
+  return layout("Search · Emotion Radar", "Search Emotion Radar issues.", body);
+}
+
 function renderAbout() {
   const body = `
   <section class="panel">
@@ -317,24 +362,27 @@ const style = `
 * { box-sizing: border-box; }
 body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; background: #0b0c10; color: #e6edf6; }
 .container { max-width: 1100px; margin: 0 auto; padding: 24px; }
-.topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(255,255,255,0.04); position: sticky; top: 0; backdrop-filter: blur(6px); }
+.topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; background: rgba(255,255,255,0.04); position: sticky; top: 0; backdrop-filter: blur(6px); z-index: 10; }
 .topbar a { color: #e6edf6; text-decoration: none; margin-right: 12px; }
 .logo { font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
 .nav a { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 16px; }
-.hero { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; background: rgba(255,255,255,0.04); padding: 24px; border-radius: 20px; }
+.hero { display: flex; flex-wrap: wrap; gap: 24px; align-items: center; background: linear-gradient(120deg, rgba(124,92,255,0.2), rgba(255,255,255,0.02)); padding: 24px; border-radius: 20px; }
 .hero h1 { margin: 0; font-size: 36px; }
 .hero h1 span { display: block; color: #9fb0c7; }
 .hero p { color: #9fb0c7; }
+.hero-actions { display: flex; gap: 12px; margin-top: 16px; }
 .eyebrow { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #9fb0c7; margin-bottom: 8px; }
 .pill-grid { display: grid; gap: 8px; }
 .pill-grid span { background: rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 16px; font-size: 12px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .grid-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
-.card { display: block; padding: 16px; border-radius: 18px; background: rgba(255,255,255,0.05); text-decoration: none; color: inherit; }
+.card { display: block; padding: 16px; border-radius: 18px; background: rgba(255,255,255,0.05); text-decoration: none; color: inherit; transition: transform 0.2s ease; }
+.card:hover { transform: translateY(-2px); }
 .card h3 { margin: 8px 0 6px; }
 .card p { color: #a9b6c7; font-size: 14px; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; background: rgba(255,255,255,0.08); border-radius: 12px; }
+.tag { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 8px; background: rgba(255,255,255,0.08); border-radius: 12px; border: none; color: inherit; cursor: pointer; }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
 .scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; margin-top: 12px; font-size: 13px; }
 .verdict { margin-top: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: #9fb0c7; }
 .issue-header h1 { font-size: 32px; margin: 12px 0; }
@@ -346,7 +394,15 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-ser
 .vote:hover { background: rgba(255,255,255,0.16); }
 .faq { margin-bottom: 12px; }
 .footer { margin: 24px auto 40px; max-width: 1100px; padding: 0 24px; color: #9fb0c7; display: flex; justify-content: space-between; font-size: 12px; }
-.button { display: inline-block; padding: 10px 16px; border-radius: 14px; background: rgba(255,255,255,0.08); color: #e6edf6; text-decoration: none; }
+.button { display: inline-block; padding: 10px 16px; border-radius: 14px; background: rgba(255,255,255,0.08); color: #e6edf6; text-decoration: none; border: none; cursor: pointer; }
+.button.ghost { background: transparent; border: 1px solid rgba(255,255,255,0.2); }
+.bars { display: grid; gap: 8px; font-size: 12px; color: #9fb0c7; }
+.bar { height: 10px; border-radius: 8px; background: rgba(255,255,255,0.1); overflow: hidden; }
+.bar-anger { height: 100%; background: #ff4d4f; }
+.bar-humor { height: 100%; background: #f7b500; }
+.bar-division { height: 100%; background: #7c5cff; }
+.search-bar { display: flex; gap: 10px; margin: 12px 0; }
+.search-bar input { flex: 1; background: rgba(255,255,255,0.08); border: none; border-radius: 12px; padding: 10px 12px; color: #e6edf6; }
 `;
 
 const appJs = `
@@ -375,6 +431,51 @@ const appJs = `
       });
     });
   });
+
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var value = btn.getAttribute('data-copy');
+      if (!value) return;
+      navigator.clipboard.writeText(value).catch(function () {});
+    });
+  });
+
+  var searchInput = document.querySelector('[data-search]');
+  var searchResults = document.querySelector('[data-search-results]');
+  var tagButtons = document.querySelectorAll('[data-tag]');
+  var clearBtn = document.querySelector('[data-search-clear]');
+
+  function filterResults() {
+    if (!searchInput || !searchResults) return;
+    var query = searchInput.value.toLowerCase().trim();
+    var cards = searchResults.querySelectorAll('.card');
+    cards.forEach(function (card) {
+      var text = card.textContent.toLowerCase();
+      var tags = card.getAttribute('data-tags') || '';
+      var match = text.indexOf(query) !== -1 || tags.indexOf(query) !== -1;
+      card.style.display = match ? '' : 'none';
+    });
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener('input', filterResults);
+  }
+
+  tagButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      if (!searchInput) return;
+      searchInput.value = btn.getAttribute('data-tag') || '';
+      filterResults();
+    });
+  });
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      if (!searchInput) return;
+      searchInput.value = '';
+      filterResults();
+    });
+  }
 })();
 `;
 
@@ -394,6 +495,8 @@ async function main() {
   await writeFile(path.join(outDir, "daily", "index.html"), renderDaily(), "utf8");
   await mkdir(path.join(outDir, "about"), { recursive: true });
   await writeFile(path.join(outDir, "about", "index.html"), renderAbout(), "utf8");
+  await mkdir(path.join(outDir, "search"), { recursive: true });
+  await writeFile(path.join(outDir, "search", "index.html"), renderSearch(), "utf8");
   await writeFile(path.join(outDir, "404.html"), renderNotFound(), "utf8");
 
   await mkdir(path.join(outDir, "issue"), { recursive: true });
@@ -415,6 +518,7 @@ async function main() {
     `${siteUrl}/`,
     `${siteUrl}/daily/`,
     `${siteUrl}/about/`,
+    `${siteUrl}/search/`,
     `${siteUrl}/collections/`,
     ...issueCollections.map((c) => `${siteUrl}/collections/${c.slug}/`),
     ...listIssues().map((issue) => `${siteUrl}/issue/${issue.slug}/`)
