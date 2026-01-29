@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#fff7f0" />
+  <text x="80" y="140" fill="#1e1e1e" font-size="48" font-family="Arial, sans-serif">오늘 뭐 먹지?</text>
+  <text x="80" y="220" fill="#ff7b6f" font-size="32" font-family="Arial, sans-serif">10초 메뉴 추천</text>
+  <rect x="80" y="300" width="420" height="16" rx="8" fill="#ff7b6f" />
+  <rect x="80" y="340" width="360" height="16" rx="8" fill="#ffd166" />
+  <rect x="80" y="380" width="460" height="16" rx="8" fill="#8ecae6" />
+</svg>
