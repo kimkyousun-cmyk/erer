@@ -36,6 +36,7 @@
         <div class="hero-actions">
           <button class="button" data-action="pick">랜덤 추천</button>
           <button class="button ghost" data-action="surprise">오늘의 깜짝 메뉴</button>
+          <button class="button ghost" data-action="meal">지금 시간 추천</button>
         </div>
       </div>
       <div class="card highlight" data-recommend-card>
@@ -48,6 +49,16 @@
           <button class="chip" data-vote="down">별로야 👎</button>
           <button class="chip" data-favorite>즐겨찾기 ⭐</button>
         </div>
+      </div>
+    </section>
+
+    <section class="panel" id="planner">
+      <h2>주간 식단 플래너</h2>
+      <p>드래그 없이 클릭만으로 이번 주 메뉴를 채워보세요.</p>
+      <div class="planner" data-planner></div>
+      <div class="planner-actions">
+        <button class="button ghost" data-planner-random>자동 채우기</button>
+        <button class="button ghost" data-planner-clear>초기화</button>
       </div>
     </section>
 

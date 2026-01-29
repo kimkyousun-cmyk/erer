@@ -14,6 +14,7 @@ const favKey = "menu-reco:favs";
 const historyKey = "menu-reco:history";
 const commentKey = "menu-reco:comments";
 const partnerKey = "menu-reco:partner";
+const plannerKey = "menu-reco:planner";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -61,9 +62,25 @@ function savePartners(items) {
   localStorage.setItem(partnerKey, JSON.stringify(items.slice(0, 10)));
 }
 
+function loadPlanner() {
+  return JSON.parse(localStorage.getItem(plannerKey) || "{}");
+}
+
+function savePlanner(data) {
+  localStorage.setItem(plannerKey, JSON.stringify(data));
+}
+
 function todayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+}
+
+function mealSlotByHour() {
+  const hour = new Date().getHours();
+  if (hour < 10) return "breakfast";
+  if (hour < 15) return "lunch";
+  if (hour < 21) return "dinner";
+  return "late";
 }
 
 function renderTags(menus) {
@@ -194,6 +211,29 @@ function renderComments() {
     : "<li>첫 댓글을 남겨주세요!</li>";
 }
 
+function renderPlanner() {
+  const planner = loadPlanner();
+  const days = ["월", "화", "수", "목", "금", "토", "일"];
+  const container = $("[data-planner]");
+  container.innerHTML = days
+    .map((day) => {
+      const menu = planner[day] || "";
+      return `<div class="planner-card"><strong>${day}</strong><span>${menu || "메뉴 선택"}</span><button class="chip" data-planner-day="${day}">선택</button></div>`;
+    })
+    .join("");
+
+  $$("[data-planner-day]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const day = btn.dataset.plannerDay;
+      const menu = pickRandom(loadMenus());
+      const planner = loadPlanner();
+      planner[day] = menu.name;
+      savePlanner(planner);
+      renderPlanner();
+    });
+  });
+}
+
 function initSortButtons() {
   $$("[data-sort]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -216,6 +256,15 @@ function initActions() {
 
   $("[data-action='surprise']").addEventListener("click", () => {
     const menu = pickRandom(loadMenus().filter((m) => m.time <= 20));
+    updateRecommend(menu);
+    menu.lastPicked = todayKey();
+    saveMenus(loadMenus().map((m) => (m.name === menu.name ? menu : m)));
+    addHistory(menu);
+  });
+
+  $("[data-action='meal']").addEventListener("click", () => {
+    const slot = mealSlotByHour();
+    const menu = pickRandom(loadMenus().filter((m) => m.meals.includes(slot)));
     updateRecommend(menu);
     menu.lastPicked = todayKey();
     saveMenus(loadMenus().map((m) => (m.name === menu.name ? menu : m)));
@@ -296,42 +345,6 @@ function initAddForm() {
   });
 }
 
-function initBackup() {
-  $("[data-export]").addEventListener("click", () => {
-    const payload = JSON.stringify(loadMenus());
-    navigator.clipboard.writeText(payload).then(() => {
-      $("[data-backup-msg]").textContent = "복사 완료!";
-      setTimeout(() => ($("[data-backup-msg]").textContent = ""), 1500);
-    });
-  });
-
-  $("[data-reset]").addEventListener("click", () => {
-    localStorage.removeItem(storeKey);
-    localStorage.removeItem(favKey);
-    localStorage.removeItem(historyKey);
-    localStorage.removeItem(commentKey);
-    localStorage.removeItem(partnerKey);
-    init();
-  });
-
-  $("[data-import-btn]").addEventListener("click", () => {
-    try {
-      const json = $("[data-import]").value.trim();
-      if (!json) return;
-      const data = JSON.parse(json);
-      if (!Array.isArray(data)) throw new Error("invalid");
-      saveMenus(data);
-      renderTags(data);
-      applyFilters();
-      updateStats();
-      $("[data-backup-msg]").textContent = "복원 완료!";
-      setTimeout(() => ($("[data-backup-msg]").textContent = ""), 1500);
-    } catch {
-      $("[data-backup-msg]").textContent = "복원 실패: JSON 형식 확인";
-    }
-  });
-}
-
 function initComments() {
   renderComments();
   $("[data-comment-form]").addEventListener("submit", (e) => {
@@ -376,7 +389,24 @@ function initShare() {
       setTimeout(() => ($("[data-share-msg]").textContent = ""), 1500);
     });
   });
-  $$("[data-share='x']");
+}
+
+function initPlanner() {
+  renderPlanner();
+  $("[data-planner-random]").addEventListener("click", () => {
+    const planner = {};
+    const days = ["월", "화", "수", "목", "금", "토", "일"];
+    const menus = loadMenus();
+    days.forEach((day) => {
+      planner[day] = pickRandom(menus).name;
+    });
+    savePlanner(planner);
+    renderPlanner();
+  });
+  $("[data-planner-clear]").addEventListener("click", () => {
+    savePlanner({});
+    renderPlanner();
+  });
 }
 
 function init() {
@@ -385,14 +415,16 @@ function init() {
   applyFilters();
   updateStats();
   renderHistory();
+  renderComments();
+  renderPlanner();
   initSortButtons();
   initActions();
   initFilters();
   initAddForm();
-  initBackup();
   initComments();
   initPartner();
   initShare();
+  initPlanner();
 }
 
 init();
