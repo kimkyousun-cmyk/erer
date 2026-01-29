@@ -18,17 +18,29 @@ body { margin: 0; font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, s
 .card.highlight { border: 2px solid #ffb5a7; }
 .tag-row, .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
 .tag, .chip { border-radius: 999px; padding: 6px 10px; font-size: 12px; border: 1px solid #f1d7c6; background: #fff4ea; cursor: pointer; }
-.chip { background: #fff; }
+.chip.active { background: #ff7b6f; color: #fff; border-color: #ff7b6f; }
 .meta { margin-top: 8px; color: #7a5b48; font-size: 12px; }
-.vote-row { display: flex; gap: 8px; margin-top: 12px; }
+.vote-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
 .button { background: #ff7b6f; color: #fff; border: none; padding: 10px 16px; border-radius: 12px; cursor: pointer; font-weight: 600; }
 .button.ghost { background: transparent; border: 1px solid #ff7b6f; color: #ff7b6f; }
 .filter-row { display: flex; gap: 12px; }
 .filter-row input { flex: 1; padding: 10px 12px; border-radius: 12px; border: 1px solid #f1d7c6; }
-.toggle-row { display: flex; gap: 16px; margin-top: 12px; font-size: 13px; }
+.toggle-row { display: flex; gap: 16px; margin-top: 12px; font-size: 13px; flex-wrap: wrap; }
+.filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 12px; }
+.filter-grid select { width: 100%; padding: 8px 10px; border-radius: 12px; border: 1px solid #f1d7c6; }
 .form { display: grid; gap: 10px; margin-top: 12px; }
-.form input { padding: 10px 12px; border-radius: 12px; border: 1px solid #f1d7c6; }
+.form input, .form select { padding: 10px 12px; border-radius: 12px; border: 1px solid #f1d7c6; }
+.meal-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
 .notice { margin-top: 8px; font-size: 13px; color: #ff7b6f; }
 .footer { margin: 24px auto 40px; max-width: 1100px; padding: 0 24px; color: #8d6b58; display: flex; justify-content: space-between; font-size: 12px; }
 .sort-row { display: flex; gap: 8px; }
 input[type="checkbox"] { accent-color: #ff7b6f; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.stat { background: #fff4ea; border-radius: 14px; padding: 12px; text-align: center; }
+.stat-title { font-size: 12px; color: #8d6b58; }
+.stat-value { font-size: 20px; font-weight: 700; }
+.empty { display: none; padding: 12px; color: #8d6b58; }
+.history { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.history li { background: #fff4ea; padding: 10px 12px; border-radius: 12px; font-size: 13px; }
+.backup-row { display: flex; gap: 12px; margin-bottom: 10px; }
+textarea { width: 100%; min-height: 120px; padding: 10px; border-radius: 12px; border: 1px solid #f1d7c6; }

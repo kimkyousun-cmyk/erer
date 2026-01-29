@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>오늘 뭐 먹지? · 스마트 메뉴 추천</title>
-  <meta name="description" content="빠르게 오늘의 메뉴를 추천하고, 태그 필터/랜덤 뽑기/투표/즐겨찾기까지 한 번에." />
+  <meta name="description" content="빠르게 오늘의 메뉴를 추천하고, 태그 필터/랜덤 뽑기/투표/즐겨찾기/기록까지 한 번에." />
   <meta name="robots" content="index,follow" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/style.css" />
   <meta property="og:title" content="오늘 뭐 먹지? · 스마트 메뉴 추천" />
-  <meta property="og:description" content="태그 기반 추천 + 랜덤 뽑기 + 투표까지 되는 메뉴 추천 사이트" />
+  <meta property="og:description" content="태그 기반 추천 + 랜덤 뽑기 + 투표 + 기록까지 되는 메뉴 추천 사이트" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/og-image.svg" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -19,6 +19,7 @@
     <div class="logo">오늘 뭐 먹지?</div>
     <nav class="nav">
       <a href="#recommend">추천</a>
+      <a href="#filters">필터</a>
       <a href="#list">목록</a>
       <a href="#add">추가</a>
     </nav>
@@ -48,6 +49,16 @@
       </div>
     </section>
 
+    <section class="panel" id="stats">
+      <h2>오늘의 통계</h2>
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-title">전체 메뉴</div><div class="stat-value" data-stat="total">0</div></div>
+        <div class="stat"><div class="stat-title">즐겨찾기</div><div class="stat-value" data-stat="favorites">0</div></div>
+        <div class="stat"><div class="stat-title">15분 이내</div><div class="stat-value" data-stat="quick">0</div></div>
+        <div class="stat"><div class="stat-title">평균 조리시간</div><div class="stat-value" data-stat="avg">0분</div></div>
+      </div>
+    </section>
+
     <section class="panel" id="filters">
       <h2>필터</h2>
       <div class="filter-row">
@@ -58,6 +69,35 @@
       <div class="toggle-row">
         <label><input type="checkbox" data-only-favorite /> 즐겨찾기만 보기</label>
         <label><input type="checkbox" data-only-quick /> 15분 이내 메뉴</label>
+        <label><input type="checkbox" data-avoid-repeat /> 오늘 추천 제외</label>
+      </div>
+      <div class="filter-grid">
+        <label>가격대
+          <select data-price>
+            <option value="all">전체</option>
+            <option value="1">가성비</option>
+            <option value="2">보통</option>
+            <option value="3">프리미엄</option>
+          </select>
+        </label>
+        <label>매운맛
+          <select data-spicy>
+            <option value="all">전체</option>
+            <option value="0">안 매움</option>
+            <option value="1">약간 매움</option>
+            <option value="2">매움</option>
+            <option value="3">아주 매움</option>
+          </select>
+        </label>
+        <label>식사 시간대
+          <select data-meal>
+            <option value="all">전체</option>
+            <option value="breakfast">아침</option>
+            <option value="lunch">점심</option>
+            <option value="dinner">저녁</option>
+            <option value="late">야식</option>
+          </select>
+        </label>
       </div>
     </section>
 
@@ -71,6 +111,12 @@
         </div>
       </div>
       <div class="grid" data-list></div>
+      <div class="empty" data-empty>조건에 맞는 메뉴가 없어요. 필터를 바꿔보세요.</div>
+    </section>
+
+    <section class="panel" id="history">
+      <h2>오늘의 추천 기록</h2>
+      <ul class="history" data-history></ul>
     </section>
 
     <section class="panel" id="add">
@@ -81,9 +127,37 @@
         <input name="desc" placeholder="설명 (예: 매콤, 든든)" required />
         <input name="tags" placeholder="태그 (쉼표로 구분)" required />
         <input name="time" type="number" min="5" max="120" placeholder="조리 시간(분)" required />
+        <select name="price">
+          <option value="1">가성비</option>
+          <option value="2">보통</option>
+          <option value="3">프리미엄</option>
+        </select>
+        <select name="spicy">
+          <option value="0">안 매움</option>
+          <option value="1">약간 매움</option>
+          <option value="2">매움</option>
+          <option value="3">아주 매움</option>
+        </select>
+        <div class="meal-row">
+          <label><input type="checkbox" name="meal" value="breakfast" /> 아침</label>
+          <label><input type="checkbox" name="meal" value="lunch" /> 점심</label>
+          <label><input type="checkbox" name="meal" value="dinner" /> 저녁</label>
+          <label><input type="checkbox" name="meal" value="late" /> 야식</label>
+        </div>
         <button class="button" type="submit">추가하기</button>
       </form>
       <div class="notice" data-add-msg></div>
+    </section>
+
+    <section class="panel" id="backup">
+      <h2>백업 & 복원</h2>
+      <div class="backup-row">
+        <button class="button ghost" data-export>데이터 복사</button>
+        <button class="button ghost" data-reset>전체 초기화</button>
+      </div>
+      <textarea placeholder="여기에 JSON을 붙여넣고 복원" data-import></textarea>
+      <button class="button" data-import-btn>복원하기</button>
+      <div class="notice" data-backup-msg></div>
     </section>
   </main>
 
