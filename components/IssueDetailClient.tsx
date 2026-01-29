@@ -50,6 +50,7 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const issueUrl = siteUrl ? `${siteUrl}/issue/${issue.slug}` : `/issue/${issue.slug}`;
+  const ogImageUrl = siteUrl ? `${siteUrl}/issue/${issue.slug}/opengraph-image` : null;
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-6">
@@ -157,7 +158,14 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
       </div>
 
       <div className="space-y-4 lg:sticky lg:top-6">
-        <SharePanel url={issueUrl} title={issue.title} verdict={issue.verdict.label} issueId={issue.id} tags={issue.tags} />
+        <SharePanel
+          url={issueUrl}
+          title={issue.title}
+          verdict={issue.verdict.label}
+          issueId={issue.id}
+          tags={issue.tags}
+          ogImageUrl={ogImageUrl}
+        />
 
         <VotePanel
           slug={issue.slug}
