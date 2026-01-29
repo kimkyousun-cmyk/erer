@@ -10,6 +10,7 @@ import { useTrackIssueOpen, useTrackScrollDepth } from "@/hooks/useTrackEvent";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { EmotionTrendChart } from "@/components/EmotionTrendChart";
 import { IssueAnswerCard } from "@/components/IssueAnswerCard";
+import { SharePanel } from "@/components/SharePanel";
 
 interface IssueDetailClientProps {
   issue: IssueDetail;
@@ -47,6 +48,8 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
   useTrackIssueOpen(issue.id, issue.tags);
   useTrackScrollDepth(issue.id, issue.tags);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "";
+  const issueUrl = siteUrl ? `${siteUrl}/issue/${issue.slug}` : `/issue/${issue.slug}`;
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-6">
@@ -154,6 +157,8 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
       </div>
 
       <div className="space-y-4 lg:sticky lg:top-6">
+        <SharePanel url={issueUrl} title={issue.title} verdict={issue.verdict.label} issueId={issue.id} tags={issue.tags} />
+
         <VotePanel
           slug={issue.slug}
           issueId={issue.id}
