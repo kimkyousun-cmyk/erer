@@ -4,8 +4,12 @@ import { listIssues, getIssueDetail } from "../services/issueGenerator";
 import { issueCollections } from "../data/collections";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.com";
-const outDir = path.join(process.cwd(), "dist");
-const assetsDir = path.join(outDir, "assets");
+const primaryOutDir = path.join(process.cwd(), "dist");
+const fallbackOutDir = path.join(process.cwd(), "public");
+
+function outputTargets() {
+  return [primaryOutDir, fallbackOutDir];
+}
 
 function escapeHtml(input: string) {
   return input
@@ -481,7 +485,8 @@ const appJs = `
 
 const ogImage = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"630\" viewBox=\"0 0 1200 630\">\n  <rect width=\"1200\" height=\"630\" fill=\"#0b0c10\" />\n  <text x=\"80\" y=\"140\" fill=\"#e6edf6\" font-size=\"42\" font-family=\"Arial, sans-serif\">Emotion Radar</text>\n  <text x=\"80\" y=\"220\" fill=\"#9fb0c7\" font-size=\"28\" font-family=\"Arial, sans-serif\">Feel the internet in 10 seconds.</text>\n  <rect x=\"80\" y=\"300\" width=\"420\" height=\"16\" rx=\"8\" fill=\"#ff4d4f\" />\n  <rect x=\"80\" y=\"340\" width=\"360\" height=\"16\" rx=\"8\" fill=\"#f7b500\" />\n  <rect x=\"80\" y=\"380\" width=\"460\" height=\"16\" rx=\"8\" fill=\"#7c5cff\" />\n</svg>`;
 
-async function main() {
+async function writeStaticOutput(outDir: string) {
+  const assetsDir = path.join(outDir, "assets");
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
   await mkdir(assetsDir, { recursive: true });
@@ -544,6 +549,12 @@ async function main() {
 
   const headersSrc = path.join(process.cwd(), "_headers");
   try { await copyFile(headersSrc, path.join(outDir, "_headers")); } catch {}
+}
+
+async function main() {
+  for (const target of outputTargets()) {
+    await writeStaticOutput(target);
+  }
 }
 
 main();
