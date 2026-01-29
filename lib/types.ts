@@ -57,12 +57,18 @@ export interface IssueSummary {
   dominantEmotion: DominantEmotion;
   verdict: Verdict;
   trend: "heating" | "cooling" | "stable";
+  trendDelta?: {
+    value: number;
+    direction: "up" | "down" | "flat";
+    label: string;
+  } | null;
   updatedAt: string;
   tags: string[];
 }
 
 export interface IssueDetail extends IssueSummary {
   trigger: string;
+  keyTriggers: string[];
   timeline: TimelinePhase[];
   reactions: ReactionSample[];
   whyItBlewUp: string[];
@@ -75,6 +81,12 @@ export interface IssueDetail extends IssueSummary {
     disagree: number;
     overreaction: number;
     justified: number;
+    matrix?: {
+      agreeJustified: number;
+      agreeOverreaction: number;
+      disagreeJustified: number;
+      disagreeOverreaction: number;
+    };
   };
   shorts?: {
     status: "QUEUED" | "RUNNING" | "SUCCEEDED" | "FAILED";

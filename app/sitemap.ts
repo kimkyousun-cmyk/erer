@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/db/prisma";
 import { getAllSlugs } from "@/services/issueGenerator";
+import { issueCollections } from "@/data/collections";
 
 export const runtime = "nodejs";
 
@@ -21,8 +22,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: now,
       changeFrequency: "daily",
       priority: 0.9
+    },
+    {
+      url: `${siteUrl}/collections`,
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.6
     }
   ];
+
+  const collectionEntries: MetadataRoute.Sitemap = issueCollections.map((collection) => ({
+    url: `${siteUrl}/collections/${collection.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.5
+  }));
 
   try {
     const issues = await prisma.issue.findMany({
@@ -39,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8
     }));
 
-    return [...base, ...issueEntries];
+    return [...base, ...collectionEntries, ...issueEntries];
   } catch {
     const fallbackSlugs = getAllSlugs();
     const issueEntries: MetadataRoute.Sitemap = fallbackSlugs.map((slug) => ({
@@ -48,6 +62,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.7
     }));
-    return [...base, ...issueEntries];
+    return [...base, ...collectionEntries, ...issueEntries];
   }
 }

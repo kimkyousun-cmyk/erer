@@ -3,6 +3,8 @@ import { logger } from "@/lib/log";
 import type { IssueDetail, IssueSummary } from "@/lib/types";
 import { IssueRepo } from "@/repositories/issueRepo";
 import { getIssueDetail as getSeedIssueDetail, listIssues as listSeedIssues } from "@/services/issueGenerator";
+import { invalidateIssueAggregation } from "@/services/aggregation/issueAggregation";
+import { invalidateFeedCaches } from "@/services/feed/feedService";
 import { toIssueDetail, toIssueSummary } from "@/services/issues/issueMapper";
 
 const ISSUE_LIST_CACHE_PREFIX = "issues:list:";
@@ -76,5 +78,7 @@ export const IssueService = {
   invalidateIssueCaches(slug?: string) {
     invalidateCache(ISSUE_LIST_CACHE_PREFIX);
     if (slug) invalidateCache(`${ISSUE_DETAIL_CACHE_PREFIX}${slug}`);
+    invalidateIssueAggregation();
+    invalidateFeedCaches();
   }
 };

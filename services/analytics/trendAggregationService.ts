@@ -1,6 +1,8 @@
 import { logger } from "@/lib/log";
-import { hoursSince, utcDayRange } from "@/lib/time";
+import { getCached, setCached } from "@/lib/cache/simpleCache";
+import { hoursSince, utcDayRange, utcDateStringOffset } from "@/lib/time";
 import { EventMetricsRepo, type IssueEventCounts } from "@/repositories/eventMetricsRepo";
+import { NotificationService } from "@/services/notifications/notificationService";
 
 function safeDivide(numerator: number, denominator: number) {
   if (denominator <= 0) return 0;
@@ -67,6 +69,8 @@ export const TrendAggregationService = {
     const issueIds = counts.map((c) => c.issueId);
     const issues = await EventMetricsRepo.listPublishedIssuesByIds(issueIds);
     const issuesById = new Map(issues.map((issue) => [issue.id, issue]));
+    const previousDateKey = utcDateStringOffset(-1, date);
+    const previousScores = await EventMetricsRepo.getMetricsForDate(previousDateKey, issueIds);
 
     let updatedMetrics = 0;
 
@@ -90,6 +94,30 @@ export const TrendAggregationService = {
         exports: entry.exports,
         trendScore
       });
+
+      const previousScore = previousScores.get(entry.issueId) ?? 0;
+      const delta = trendScore - previousScore;
+      const spikeKey = `trend-spike:${dateKey}:${entry.issueId}`;
+      const alreadyNotified = getCached<boolean>(spikeKey);
+      const isSpike = trendScore >= 70 && delta >= 15;
+
+      if (isSpike && !alreadyNotified) {
+        // Best-effort alerting; no durable queue yet.
+        setCached(spikeKey, true, 60 * 60 * 24);
+        try {
+          await NotificationService.notifyTrendSpike({
+            issueId: entry.issueId,
+            trendScore,
+            delta,
+            dateKey
+          });
+        } catch (err) {
+          logger.warn("trend_spike.notify_failed", {
+            issueId: entry.issueId,
+            error: err instanceof Error ? err.message : String(err)
+          });
+        }
+      }
 
       updatedMetrics += 1;
     }

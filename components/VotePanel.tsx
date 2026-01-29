@@ -47,6 +47,12 @@ export function VotePanel({ slug, issueId, tags, initialPulse, onAdjustedScores,
 
   const total = useMemo(() => pulse.agree + pulse.disagree, [pulse]);
   const agreePct = total === 0 ? 50 : Math.round((pulse.agree / total) * 100);
+  const matrix = pulse.matrix ?? {
+    agreeJustified: 0,
+    agreeOverreaction: 0,
+    disagreeJustified: 0,
+    disagreeOverreaction: 0
+  };
 
   const submitVote = useCallback(
     (nextChoice: Exclude<VoteChoice, null>) => {
@@ -179,6 +185,28 @@ export function VotePanel({ slug, issueId, tags, initialPulse, onAdjustedScores,
         <div className="rounded-2xl border border-white/5 bg-white/5 px-3 py-2">
           <div className="font-semibold text-ink">Justified</div>
           <div>{pulse.justified}</div>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-white/5 bg-white/5 p-3">
+        <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted">Pulse Heatmap</div>
+        <div className="grid grid-cols-2 gap-2 text-xs text-muted">
+          <div className="rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-3 py-2">
+            <div className="font-semibold text-emerald-100">Agree + Justified</div>
+            <div className="mt-1 text-sm text-ink">{matrix.agreeJustified}</div>
+          </div>
+          <div className="rounded-xl border border-amber-300/20 bg-amber-500/10 px-3 py-2">
+            <div className="font-semibold text-amber-100">Agree + Overreaction</div>
+            <div className="mt-1 text-sm text-ink">{matrix.agreeOverreaction}</div>
+          </div>
+          <div className="rounded-xl border border-sky-300/20 bg-sky-500/10 px-3 py-2">
+            <div className="font-semibold text-sky-100">Disagree + Justified</div>
+            <div className="mt-1 text-sm text-ink">{matrix.disagreeJustified}</div>
+          </div>
+          <div className="rounded-xl border border-rose-300/20 bg-rose-500/10 px-3 py-2">
+            <div className="font-semibold text-rose-100">Disagree + Overreaction</div>
+            <div className="mt-1 text-sm text-ink">{matrix.disagreeOverreaction}</div>
+          </div>
         </div>
       </div>
 

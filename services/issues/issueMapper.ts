@@ -32,9 +32,43 @@ function trendFromTrendScore(trendScore: number | null | undefined) {
   return "stable" as const;
 }
 
+function trendDeltaFromScore(delta?: number | null) {
+  if (delta == null || !Number.isFinite(delta)) return null;
+  const rounded = Math.round(delta);
+  if (rounded === 0) {
+    return { value: 0, direction: "flat" as const, label: "0" };
+  }
+  const direction = rounded > 0 ? "up" : "down";
+  const label = `${rounded > 0 ? "+" : ""}${rounded}`;
+  return { value: rounded, direction, label };
+}
+
 function extractTrigger(timeline: IssueTimelineEvent[]) {
   const trigger = timeline.find((t) => t.phase === "TRIGGER");
   return trigger?.detail ?? timeline[0]?.detail ?? "A triggering moment reframed the topic emotionally.";
+}
+
+function formatKeyTrigger(label: string, detail: string) {
+  const text = `${label}: ${detail}`;
+  if (text.length <= 140) return text;
+  return `${text.slice(0, 137).trimEnd()}...`;
+}
+
+function keyTriggersFromTimeline(timeline: IssueTimelineEvent[]) {
+  const prioritized = ["TRIGGER", "ESCALATION", "PEAK"];
+  const triggers: IssueTimelineEvent[] = [];
+
+  for (const phase of prioritized) {
+    const match = timeline.find((event) => event.phase === phase);
+    if (match) triggers.push(match);
+  }
+
+  if (triggers.length < 3) {
+    const extras = timeline.filter((event) => !triggers.includes(event));
+    triggers.push(...extras);
+  }
+
+  return triggers.slice(0, 3).map((event) => formatKeyTrigger(event.label, event.detail));
 }
 
 function whyItBlewUp(scores: { anger: number; humor: number; division: number }) {
@@ -57,10 +91,11 @@ function whyPeopleDisagree() {
 
 export async function toIssueSummary(
   issue: Issue,
-  options?: { trendScore?: number | null }
+  options?: { trendScore?: number | null; trendDelta?: number | null }
 ): Promise<IssueSummary> {
   const agg = await computeIssueScores(issue);
   const trendFromScore = trendFromTrendScore(options?.trendScore);
+  const trendDelta = trendDeltaFromScore(options?.trendDelta);
 
   return {
     id: issue.id,
@@ -78,6 +113,7 @@ export async function toIssueSummary(
       tone: toneFromDominant(issue.dominantEmotion)
     },
     trend: trendFromScore ?? trendFromDates(issue),
+    trendDelta,
     updatedAt: issue.updatedAt.toISOString().slice(0, 10),
     tags: parseTags(issue.tags)
   };
@@ -111,6 +147,7 @@ export async function toIssueDetail(input: {
     updatedAt: input.issue.updatedAt.toISOString().slice(0, 10),
     tags: parseTags(input.issue.tags),
     trigger: extractTrigger(input.timelineEvents),
+    keyTriggers: keyTriggersFromTimeline(input.timelineEvents),
     timeline: input.timelineEvents.map((event) => ({
       key: event.phase.toLowerCase() as "trigger" | "escalation" | "peak" | "cooling",
       label: event.label,
@@ -138,7 +175,8 @@ export async function toIssueDetail(input: {
       agree: agg.votePulse.agree,
       disagree: agg.votePulse.disagree,
       overreaction: agg.votePulse.overreaction,
-      justified: agg.votePulse.justified
+      justified: agg.votePulse.justified,
+      matrix: agg.votePulse.matrix
     },
     shorts: latestShorts
       ? {

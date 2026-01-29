@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { IssueCard } from "@/components/IssueCard";
-import { IssueService } from "@/services/issues/issueService";
 import { FeedService } from "@/services/feed/feedService";
-import { ExperimentService } from "@/services/experiments/experimentService";
+import type { FeedMode } from "@/services/feed/feedService";
+import { IssueFeedClient } from "@/components/IssueFeedClient";
+import { FeedRepo } from "@/repositories/feedRepo";
+import { getSessionHash } from "@/lib/security/session";
+import { IssueCard } from "@/components/IssueCard";
 
 export const metadata: Metadata = {
   title: "Emotion Radar — Trending Mood",
@@ -10,22 +12,37 @@ export const metadata: Metadata = {
     "Trending internet issues summarized emotionally: anger, humor, and division in one glance."
 };
 
-export default async function HomePage() {
-  const [issues, layoutVariant] = await Promise.all([
-    (async () => {
-      try {
-        const params = new URLSearchParams({ mode: "trending", take: "24", skip: "0" });
-        const feed = await FeedService.getFeed(params);
-        return feed.issues;
-      } catch {
-        return IssueService.listIssues({ status: "PUBLISHED", take: 24 });
-      }
-    })(),
-    ExperimentService.getVariant("HOME_LAYOUT_DENSITY")
+interface HomePageProps {
+  searchParams?: Record<string, string | string[] | undefined>;
+}
+
+function readParam(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const modeParam = readParam(searchParams?.mode);
+  const tagParam = readParam(searchParams?.tag);
+  const allowedModes: FeedMode[] = ["trending", "new", "divided", "funny", "angry", "for_you", "following"];
+  const parsedMode = allowedModes.includes(modeParam as FeedMode) ? (modeParam as FeedMode) : "trending";
+  const mode = parsedMode ?? "trending";
+  const take = 24;
+
+  const params = new URLSearchParams({ mode, take: String(take), skip: "0" });
+  if (tagParam) params.set("tag", tagParam);
+
+  const sessionHash = getSessionHash();
+  const [feed, followedTags] = await Promise.all([
+    FeedService.getFeed(params),
+    FeedRepo.listSessionFollowTags(sessionHash)
   ]);
 
-  const compact = layoutVariant.active && layoutVariant.variant !== "control";
-  const gridGap = compact ? "gap-3" : "gap-4";
+  const tags = Array.from(new Set(feed.issues.flatMap((issue) => issue.tags))).slice(0, 12);
+  const hasFollowed = followedTags.length > 0;
+  const followingFeed = hasFollowed
+    ? await FeedService.getFeed(new URLSearchParams({ mode: "following", take: "6", skip: "0" }))
+    : null;
 
   return (
     <main className="space-y-8">
@@ -59,23 +76,39 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-2">
-        <div className="flex items-end justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-ink sm:text-2xl">Trending Issues</h2>
-            <p className="text-sm text-muted">Signal-first cards you can scan and share.</p>
+      {hasFollowed && followingFeed ? (
+        <section className="rounded-3xl border border-white/5 bg-panel/70 p-6 shadow-glow">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold text-ink">Following</h2>
+              <p className="text-sm text-muted">Issues from tags you care about.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {followedTags.slice(0, 6).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full border border-emerald-300/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-100"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted">
-            Live Mood
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {followingFeed.issues.map((issue) => (
+              <IssueCard key={issue.slug} issue={issue} />
+            ))}
           </div>
-        </div>
+        </section>
+      ) : null}
 
-        <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 ${gridGap}`}>
-          {issues.map((issue) => (
-            <IssueCard key={issue.slug} issue={issue} />
-          ))}
-        </div>
-      </section>
+      <IssueFeedClient
+        initialIssues={feed.issues}
+        initialMode={feed.mode}
+        initialTag={tagParam ?? null}
+        tags={tags}
+        initialTake={take}
+      />
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="rounded-3xl border border-white/5 bg-panel/70 p-5 shadow-glow">

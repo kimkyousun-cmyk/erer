@@ -5,6 +5,12 @@ export function utcDateString(date: Date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+export function utcDateStringOffset(offsetDays: number, base: Date = new Date()): string {
+  const date = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate()));
+  date.setUTCDate(date.getUTCDate() + offsetDays);
+  return utcDateString(date);
+}
+
 export function utcDayRange(date: Date = new Date()): { start: Date; end: Date; dateKey: string } {
   const start = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
   const end = new Date(start);

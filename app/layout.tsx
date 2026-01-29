@@ -78,6 +78,12 @@ async function TopBar({ sessionPromise }: { sessionPromise: ReturnType<typeof ge
         >
           Daily
         </Link>
+        <Link
+          href="/collections"
+          className="rounded-2xl border border-white/10 bg-white/5 px-2.5 py-1 font-semibold uppercase tracking-wide transition hover:border-white/20"
+        >
+          Collections
+        </Link>
       </div>
 
       {session ? (

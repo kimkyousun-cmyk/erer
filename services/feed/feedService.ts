@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { hoursSince, utcDateString } from "@/lib/time";
+import { getCached, invalidateCache, setCached } from "@/lib/cache/simpleCache";
+import { hoursSince, utcDateString, utcDateStringOffset } from "@/lib/time";
 import { getSessionHash } from "@/lib/security/session";
 import { isDemoMode } from "@/lib/demo";
 import { FeedRepo } from "@/repositories/feedRepo";
@@ -18,6 +19,9 @@ const feedModes = [
 ] as const;
 
 export type FeedMode = (typeof feedModes)[number];
+
+const FEED_CACHE_PREFIX = "feed:";
+const FEED_TTL_SECONDS = 60;
 
 const feedQuerySchema = z.object({
   mode: z.enum(feedModes).default("trending"),
@@ -121,16 +125,25 @@ function recencyBoost(date: Date | null) {
   return 0;
 }
 
-async function mapSummariesWithTrend(dateKey: string, issues: Array<{ id: string } & Record<string, unknown>>) {
+async function mapSummariesWithTrend(
+  dateKey: string,
+  issues: Array<{ id: string } & Record<string, unknown>>
+) {
   const trendScores = await FeedRepo.getTrendScores(
     dateKey,
+    issues.map((issue) => issue.id)
+  );
+  const yesterdayKey = utcDateStringOffset(-1);
+  const previousScores = await FeedRepo.getMetricsForDate(
+    yesterdayKey,
     issues.map((issue) => issue.id)
   );
 
   return Promise.all(
     issues.map(async (issue) =>
       toIssueSummary(issue as Parameters<typeof toIssueSummary>[0], {
-        trendScore: trendScores.get(issue.id) ?? null
+        trendScore: trendScores.get(issue.id) ?? null,
+        trendDelta: (trendScores.get(issue.id) ?? 0) - (previousScores.get(issue.id) ?? 0)
       })
     )
   );
@@ -152,6 +165,8 @@ export const FeedService = {
       skip: searchParams.get("skip") ?? undefined,
       tag: searchParams.get("tag") ?? undefined
     });
+
+    const cacheKeyBase = `${FEED_CACHE_PREFIX}${parsed.mode}:${parsed.take}:${parsed.skip}:${parsed.tag ?? "all"}`;
 
     if (isDemoMode()) {
       const dateKey = utcDateString(new Date());
@@ -177,6 +192,9 @@ export const FeedService = {
     }
 
     const sessionHash = getSessionHash();
+    const cacheKey = `${cacheKeyBase}:${sessionHash}`;
+    const cached = getCached<FeedResult>(cacheKey);
+    if (cached) return cached;
     const dateKey = utcDateString(new Date());
 
     const [hiddenIds, followedTags, sessionEvents, feedOrderVariant] = await Promise.all([
@@ -192,6 +210,11 @@ export const FeedService = {
     if (parsed.mode === "trending") {
       const trending = await FeedRepo.listTrending(dateKey, parsed.take * 3, parsed.skip);
       if (trending.length > 0) {
+        const yesterdayKey = utcDateStringOffset(-1);
+        const previousScores = await FeedRepo.getMetricsForDate(
+          yesterdayKey,
+          trending.map((row) => row.issue.id)
+        );
         const rankedTrending = applyRecentBias
           ? [...trending].sort((a, b) => {
               const scoreA = (a.trendScore ?? 0) + recencyBoost(a.issue.publishedAt);
@@ -205,9 +228,16 @@ export const FeedService = {
         );
         const visible = excludeHidden(filtered, hiddenSet).slice(parsed.skip, parsed.skip + parsed.take);
         const summaries = await Promise.all(
-          visible.map((row) => toIssueSummary(row, { trendScore: row.trendScore }))
+          visible.map((row) =>
+            toIssueSummary(row, {
+              trendScore: row.trendScore,
+              trendDelta: (row.trendScore ?? 0) - (previousScores.get(row.id) ?? 0)
+            })
+          )
         );
-        return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+        const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+        setCached(cacheKey, result, FEED_TTL_SECONDS);
+        return result;
       }
       // Fall back to recent published when no metrics exist yet.
     }
@@ -217,7 +247,9 @@ export const FeedService = {
       const filtered = applyTagFilter(issues, parsed.tag);
       const visible = excludeHidden(filtered, hiddenSet);
       const summaries = await mapSummariesWithTrend(dateKey, visible);
-      return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      setCached(cacheKey, result, FEED_TTL_SECONDS);
+      return result;
     }
 
     if (parsed.mode === "funny") {
@@ -225,7 +257,9 @@ export const FeedService = {
       const filtered = applyTagFilter(issues, parsed.tag);
       const visible = excludeHidden(filtered, hiddenSet);
       const summaries = await mapSummariesWithTrend(dateKey, visible);
-      return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      setCached(cacheKey, result, FEED_TTL_SECONDS);
+      return result;
     }
 
     if (parsed.mode === "angry") {
@@ -233,7 +267,9 @@ export const FeedService = {
       const filtered = applyTagFilter(issues, parsed.tag);
       const visible = excludeHidden(filtered, hiddenSet);
       const summaries = await mapSummariesWithTrend(dateKey, visible);
-      return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      setCached(cacheKey, result, FEED_TTL_SECONDS);
+      return result;
     }
 
     if (parsed.mode === "divided") {
@@ -241,7 +277,9 @@ export const FeedService = {
       const filtered = applyTagFilter(issues, parsed.tag);
       const visible = excludeHidden(filtered, hiddenSet);
       const summaries = await mapSummariesWithTrend(dateKey, visible);
-      return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      setCached(cacheKey, result, FEED_TTL_SECONDS);
+      return result;
     }
 
     if (parsed.mode === "following") {
@@ -255,7 +293,9 @@ export const FeedService = {
         parsed.skip + parsed.take
       );
       const summaries = await mapSummariesWithTrend(dateKey, visible);
-      return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+      setCached(cacheKey, result, FEED_TTL_SECONDS);
+      return result;
     }
 
     // for_you
@@ -264,6 +304,11 @@ export const FeedService = {
     const candidates = await FeedRepo.listPublishedRecent(Math.max(90, parsed.take * 4));
     const trendScores = await FeedRepo.getTrendScores(
       dateKey,
+      candidates.map((c) => c.id)
+    );
+    const yesterdayKey = utcDateStringOffset(-1);
+    const previousScores = await FeedRepo.getMetricsForDate(
+      yesterdayKey,
       candidates.map((c) => c.id)
     );
 
@@ -288,9 +333,20 @@ export const FeedService = {
       .slice(parsed.skip, parsed.skip + parsed.take);
 
     const summaries = await Promise.all(
-      scored.map((row) => toIssueSummary(row.issue, { trendScore: row.trendScore }))
+      scored.map((row) =>
+        toIssueSummary(row.issue, {
+          trendScore: row.trendScore,
+          trendDelta: (row.trendScore ?? 0) - (previousScores.get(row.issue.id) ?? 0)
+        })
+      )
     );
 
-    return { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+    const result = { mode: parsed.mode, take: parsed.take, skip: parsed.skip, dateKey, issues: summaries };
+    setCached(cacheKey, result, FEED_TTL_SECONDS);
+    return result;
   }
 };
+
+export function invalidateFeedCaches() {
+  invalidateCache(FEED_CACHE_PREFIX);
+}

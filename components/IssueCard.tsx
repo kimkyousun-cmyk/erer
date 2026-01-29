@@ -37,7 +37,25 @@ export function IssueCard({ issue }: IssueCardProps) {
           <h2 className="text-lg font-semibold leading-tight text-ink sm:text-xl">{issue.title}</h2>
         </div>
         <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-1.5 text-right text-[11px] font-semibold uppercase tracking-wide text-muted">
-          {trendLabel[issue.trend]}
+          <div>{trendLabel[issue.trend]}</div>
+          {issue.trendDelta ? (
+            <div
+              className={`mt-1 text-[10px] font-semibold ${
+                issue.trendDelta.direction === "up"
+                  ? "text-emerald-200"
+                  : issue.trendDelta.direction === "down"
+                    ? "text-rose-200"
+                    : "text-muted"
+              }`}
+            >
+              {issue.trendDelta.direction === "up"
+                ? "▲"
+                : issue.trendDelta.direction === "down"
+                  ? "▼"
+                  : "•"}{" "}
+              {issue.trendDelta.label}
+            </div>
+          ) : null}
         </div>
       </div>
 

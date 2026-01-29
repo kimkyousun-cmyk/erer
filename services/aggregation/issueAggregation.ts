@@ -1,3 +1,4 @@
+import { getCached, invalidateCache, setCached } from "@/lib/cache/simpleCache";
 import { clamp, roundScore } from "@/lib/utils";
 
 export interface AggregatedScores {
@@ -10,6 +11,12 @@ export interface AggregatedScores {
     justified: number;
     overreaction: number;
     total: number;
+    matrix: {
+      agreeJustified: number;
+      agreeOverreaction: number;
+      disagreeJustified: number;
+      disagreeOverreaction: number;
+    };
   };
   deltas: {
     anger: number;
@@ -17,6 +24,9 @@ export interface AggregatedScores {
     division: number;
   };
 }
+
+const AGG_CACHE_PREFIX = "agg:issue:";
+const AGG_TTL_SECONDS = 60;
 
 function boundedDelta(value: number, maxDelta = 7) {
   return Math.max(-maxDelta, Math.min(maxDelta, value));
@@ -28,6 +38,12 @@ export interface VoteAggregateInput {
   disagree: number;
   justified: number;
   overreaction: number;
+  matrix: {
+    agreeJustified: number;
+    agreeOverreaction: number;
+    disagreeJustified: number;
+    disagreeOverreaction: number;
+  };
 }
 
 export function applyVoteAggregateToScores(
@@ -59,7 +75,8 @@ export function applyVoteAggregateToScores(
       disagree: agg.disagree,
       justified: agg.justified,
       overreaction: agg.overreaction,
-      total: agg.total
+      total: agg.total,
+      matrix: agg.matrix
     },
     deltas: {
       anger: Math.round(angerDelta * 10) / 10,
@@ -69,16 +86,28 @@ export function applyVoteAggregateToScores(
   };
 }
 
+export function invalidateIssueAggregation(issueId?: string) {
+  if (issueId) {
+    invalidateCache(`${AGG_CACHE_PREFIX}${issueId}`);
+    return;
+  }
+  invalidateCache(AGG_CACHE_PREFIX);
+}
+
 export async function computeIssueScores(issue: {
   id: string;
   angerScore: number;
   humorScore: number;
   divisionScore: number;
 }): Promise<AggregatedScores> {
+  const cacheKey = `${AGG_CACHE_PREFIX}${issue.id}:${issue.angerScore}:${issue.humorScore}:${issue.divisionScore}`;
+  const cached = getCached<AggregatedScores>(cacheKey);
+  if (cached) return cached;
+
   const { VoteRepo } = await import("@/repositories/voteRepo");
   const agg = await VoteRepo.aggregateByIssue(issue.id);
 
-  return applyVoteAggregateToScores(
+  const scored = applyVoteAggregateToScores(
     {
       angerScore: issue.angerScore,
       humorScore: issue.humorScore,
@@ -86,4 +115,6 @@ export async function computeIssueScores(issue: {
     },
     agg
   );
+  setCached(cacheKey, scored, AGG_TTL_SECONDS);
+  return scored;
 }

@@ -42,6 +42,31 @@ function whyPeopleDisagree(seed: IssueSeed) {
   };
 }
 
+function keyTriggersFromTimeline(timeline: IssueSeed["timeline"]) {
+  const prioritized: IssueSeed["timeline"] = [];
+  const priorityKeys: Array<IssueSeed["timeline"][number]["key"]> = [
+    "trigger",
+    "escalation",
+    "peak"
+  ];
+
+  for (const key of priorityKeys) {
+    const match = timeline.find((phase) => phase.key === key);
+    if (match) prioritized.push(match);
+  }
+
+  if (prioritized.length < 3) {
+    const extras = timeline.filter((phase) => !prioritized.includes(phase));
+    prioritized.push(...extras);
+  }
+
+  return prioritized.slice(0, 3).map((phase) => {
+    const text = `${phase.label}: ${phase.summary}`;
+    if (text.length <= 140) return text;
+    return `${text.slice(0, 137).trimEnd()}...`;
+  });
+}
+
 function toSummary(seed: IssueSeed): IssueSummary {
   const velocity = jitterVelocity(seed);
   const state = getVoteState(seed.slug);
@@ -93,6 +118,7 @@ export function getIssueDetail(slug: string): IssueDetail | null {
     updatedAt: formatDate(new Date()),
     tags: seed.tags,
     trigger: seed.trigger,
+    keyTriggers: keyTriggersFromTimeline(seed.timeline),
     timeline: seed.timeline,
     reactions: simulateReactions(seed, reactionCount),
     whyItBlewUp: whyItBlewUp(seed),

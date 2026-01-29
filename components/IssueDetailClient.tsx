@@ -8,6 +8,7 @@ import { VotePanel } from "@/components/VotePanel";
 import { CreatorToolsPanel } from "@/components/CreatorToolsPanel";
 import { useTrackIssueOpen, useTrackScrollDepth } from "@/hooks/useTrackEvent";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
+import { EmotionTrendChart } from "@/components/EmotionTrendChart";
 
 interface IssueDetailClientProps {
   issue: IssueDetail;
@@ -63,6 +64,21 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
         </section>
 
         <section className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow">
+          <EmotionTrendChart timeline={issue.timeline} />
+        </section>
+
+        <section className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow">
+          <h3 className="mb-3 text-lg font-semibold text-ink">Key Triggers</h3>
+          <ul className="grid grid-cols-1 gap-2 text-sm leading-6 text-ink">
+            {issue.keyTriggers.map((line) => (
+              <li key={line} className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">
+                {line}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow">
           <h3 className="mb-4 text-lg font-semibold text-ink">Timeline</h3>
           <ol className="space-y-4">
             {issue.timeline.map((phase) => (
@@ -106,12 +122,16 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
         </section>
 
         <section className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow">
-          <h3 className="mb-3 text-lg font-semibold text-ink">Why People Disagree</h3>
+          <h3 className="mb-3 text-lg font-semibold text-ink">Two Perspectives</h3>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <div className="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm leading-6 text-ink">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">Why some are outraged</div>
               {issue.whyPeopleDisagree.sideA}
             </div>
             <div className="rounded-2xl border border-white/5 bg-white/5 p-4 text-sm leading-6 text-ink">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
+                Why some think it is overblown
+              </div>
               {issue.whyPeopleDisagree.sideB}
             </div>
           </div>

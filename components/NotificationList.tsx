@@ -29,6 +29,20 @@ function renderBody(item: NotificationItem) {
     };
   }
 
+  if (item.type === "TREND_SPIKE") {
+    const slug = typeof item.payload?.slug === "string" ? item.payload.slug : null;
+    const title = typeof item.payload?.title === "string" ? item.payload.title : "Trend spike";
+    const delta = typeof item.payload?.delta === "number" ? item.payload.delta : null;
+    const trendScore = typeof item.payload?.trendScore === "number" ? item.payload.trendScore : null;
+    const deltaLabel = delta == null ? "Spike detected" : `Spike +${delta}`;
+    const scoreLabel = trendScore == null ? "" : ` · score ${trendScore}`;
+    return {
+      title,
+      href: slug ? `/issue/${slug}` : null,
+      detail: `${deltaLabel}${scoreLabel}`.trim()
+    };
+  }
+
   return {
     title: item.type,
     href: null,

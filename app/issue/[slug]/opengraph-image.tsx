@@ -54,11 +54,24 @@ function bar(value: number, color: string) {
   );
 }
 
+function trendLabel(trend?: "heating" | "cooling" | "stable") {
+  if (trend === "heating") return "Heating up";
+  if (trend === "cooling") return "Cooling down";
+  return "Holding steady";
+}
+
+function clampText(text: string, max = 140) {
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 1).trim()}…`;
+}
+
 export default async function Image({ params }: { params: { slug: string } }) {
   const issue = await IssueService.getIssueDetailBySlug(params.slug);
 
   const title = issue?.title ?? "Emotion Radar";
   const verdict = issue?.verdict.label ?? "Feel the internet";
+  const context = clampText(issue?.context ?? "Emotion-first signals, no headlines required.");
+  const trend = trendLabel(issue?.trend);
   const anger = issue?.scores.anger ?? 64;
   const humor = issue?.scores.humor ?? 52;
   const division = issue?.scores.division ?? 71;
@@ -100,21 +113,19 @@ export default async function Image({ params }: { params: { slug: string } }) {
           >
             {title}
           </div>
-          <div
-            style={{
-              fontSize: 24,
-              fontWeight: 700,
-              color: "#c9d2e3"
-            }}
-          >
-            {verdict}
-          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#c9d2e3" }}>{verdict}</div>
+          <div style={{ fontSize: 18, color: "#a7b0c2", maxWidth: 980 }}>{context}</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {bar(anger, "#ff4d4f")}
           {bar(humor, "#f7b500")}
           {bar(division, "#7c5cff")}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", color: "#9aa4b2", fontSize: 16 }}>
+          <div style={{ textTransform: "uppercase", letterSpacing: 1.2, fontWeight: 700 }}>Emotion Radar</div>
+          <div style={{ fontWeight: 700 }}>{trend}</div>
         </div>
       </div>
     ),

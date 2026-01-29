@@ -83,6 +83,19 @@ export const FeedRepo = {
     return new Map(rows.map((row) => [row.issueId, row.trendScore]));
   },
 
+  async getMetricsForDate(dateKey: string, issueIds: string[]) {
+    if (issueIds.length === 0) return new Map<string, number>();
+    const { prisma } = await import("@/lib/db/prisma");
+    const rows = await prisma.issueMetricsDaily.findMany({
+      where: {
+        date: dateKey,
+        issueId: { in: unique(issueIds) }
+      },
+      select: { issueId: true, trendScore: true }
+    });
+    return new Map(rows.map((row) => [row.issueId, row.trendScore]));
+  },
+
   async listSessionEvents(sessionHash: string, take: number) {
     const { prisma } = await import("@/lib/db/prisma");
     return prisma.event.findMany({

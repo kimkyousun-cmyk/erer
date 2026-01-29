@@ -13,6 +13,12 @@ export interface VoteAggregate {
   disagree: number;
   justified: number;
   overreaction: number;
+  matrix: {
+    agreeJustified: number;
+    agreeOverreaction: number;
+    disagreeJustified: number;
+    disagreeOverreaction: number;
+  };
 }
 
 export function voteUpsertKey(issueId: string, sessionHash: string) {
@@ -56,12 +62,20 @@ export const VoteRepo = {
     let disagree = 0;
     let justified = 0;
     let overreaction = 0;
+    let agreeJustified = 0;
+    let agreeOverreaction = 0;
+    let disagreeJustified = 0;
+    let disagreeOverreaction = 0;
 
     for (const vote of votes) {
       if (vote.agree === true) agree += 1;
       if (vote.agree === false) disagree += 1;
       if (vote.justified === true) justified += 1;
       if (vote.justified === false) overreaction += 1;
+      if (vote.agree === true && vote.justified === true) agreeJustified += 1;
+      if (vote.agree === true && vote.justified === false) agreeOverreaction += 1;
+      if (vote.agree === false && vote.justified === true) disagreeJustified += 1;
+      if (vote.agree === false && vote.justified === false) disagreeOverreaction += 1;
     }
 
     return {
@@ -69,7 +83,13 @@ export const VoteRepo = {
       agree,
       disagree,
       justified,
-      overreaction
+      overreaction,
+      matrix: {
+        agreeJustified,
+        agreeOverreaction,
+        disagreeJustified,
+        disagreeOverreaction
+      }
     };
   }
 };

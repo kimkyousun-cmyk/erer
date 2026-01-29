@@ -9,7 +9,7 @@ import { getSessionHash } from "@/lib/security/session";
 import { votePayloadSchema } from "@/lib/validation/vote";
 import { applyVote, toCommunityPulse } from "@/lib/voteStore";
 import { VoteRepo } from "@/repositories/voteRepo";
-import { computeIssueScores } from "@/services/aggregation/issueAggregation";
+import { computeIssueScores, invalidateIssueAggregation } from "@/services/aggregation/issueAggregation";
 import { IssueService } from "@/services/issues/issueService";
 import { getIssueDetail as getSeedIssueDetail } from "@/services/issueGenerator";
 
@@ -88,6 +88,7 @@ export async function POST(request: Request) {
       justified: parsed.data.justified
     });
 
+    invalidateIssueAggregation(issue.id);
     const agg = await computeIssueScores(issue);
     IssueService.invalidateIssueCaches(issue.slug);
 
@@ -97,7 +98,8 @@ export async function POST(request: Request) {
         agree: agg.votePulse.agree,
         disagree: agg.votePulse.disagree,
         overreaction: agg.votePulse.overreaction,
-        justified: agg.votePulse.justified
+        justified: agg.votePulse.justified,
+        matrix: agg.votePulse.matrix
       },
       adjustedScores: {
         anger: agg.anger,
