@@ -40,11 +40,16 @@ function layout(title: string, description: string, body: string, extraHead = ""
     <nav class="nav">
       <a href="/collections">Collections</a>
       <a href="/daily">Daily</a>
+      <a href="/about">About</a>
     </nav>
   </header>
   <main class="container">
     ${body}
   </main>
+  <footer class="footer">
+    <div>Emotion Radar — emotion-first sentiment snapshots.</div>
+    <div><a href="/about">About</a> · <a href="/sitemap.xml">Sitemap</a></div>
+  </footer>
   <script src="/assets/app.js" defer></script>
 </body>
 </html>`;
@@ -69,6 +74,7 @@ function issueCard(issue: ReturnType<typeof listIssues>[number]) {
 
 function renderHome() {
   const issues = listIssues();
+  const top = issues.slice(0, 3);
   const body = `
   <section class="hero">
     <div>
@@ -82,6 +88,13 @@ function renderHome() {
       <span>Division</span>
     </div>
   </section>
+
+  <section class="panel">
+    <h2>Quick Answer</h2>
+    <p>Emotion Radar is a public sentiment visualization engine. It shows how the internet feels, not just the facts.</p>
+    <div class="grid">${top.map(issueCard).join("\n")}</div>
+  </section>
+
   <section>
     <h2>Trending Issues</h2>
     <div class="grid">${issues.map(issueCard).join("\n")}</div>
@@ -274,6 +287,31 @@ function renderDaily() {
   return layout("Daily · Emotion Radar", "Daily mood digest.", body);
 }
 
+function renderAbout() {
+  const body = `
+  <section class="panel">
+    <h1>About Emotion Radar</h1>
+    <p>Emotion Radar is a sentiment visualization engine. It shows the internet's mood, not the facts.</p>
+    <ul>
+      <li>Emotion &gt; Information</li>
+      <li>Signal &gt; Noise</li>
+      <li>Speed &gt; Completeness</li>
+    </ul>
+    <p>All reactions are simulated, and issues are abstracted to avoid targeting individuals.</p>
+  </section>`;
+  return layout("About · Emotion Radar", "What Emotion Radar is and why it exists.", body);
+}
+
+function renderNotFound() {
+  const body = `
+  <section class="panel">
+    <h1>Not Found</h1>
+    <p>This page does not exist. Try the homepage.</p>
+    <a class="button" href="/">Go home</a>
+  </section>`;
+  return layout("Not Found · Emotion Radar", "Page not found", body);
+}
+
 const style = `
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
@@ -307,6 +345,8 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, sans-ser
 .vote { padding: 10px; border-radius: 12px; background: rgba(255,255,255,0.08); color: #e6edf6; border: none; cursor: pointer; }
 .vote:hover { background: rgba(255,255,255,0.16); }
 .faq { margin-bottom: 12px; }
+.footer { margin: 24px auto 40px; max-width: 1100px; padding: 0 24px; color: #9fb0c7; display: flex; justify-content: space-between; font-size: 12px; }
+.button { display: inline-block; padding: 10px 16px; border-radius: 14px; background: rgba(255,255,255,0.08); color: #e6edf6; text-decoration: none; }
 `;
 
 const appJs = `
@@ -338,7 +378,8 @@ const appJs = `
 })();
 `;
 
-const ogImage = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"630\" viewBox=\"0 0 1200 630\">\n  <rect width=\"1200\" height=\"630\" fill=\"#0b0c10\" />\n  <text x=\"80\" y=\"140\" fill=\"#e6edf6\" font-size=\"42\" font-family=\"Arial, sans-serif\">Emotion Radar</text>\n  <text x=\"80\" y=\"220\" fill=\"#9fb0c7\" font-size=\"28\" font-family=\"Arial, sans-serif\">Feel the internet in 10 seconds.</text>\n  <rect x=\"80\" y=\"300\" width=\"420\" height=\"16\" rx=\"8\" fill=\"#ff4d4f\" />\n  <rect x=\"80\" y=\"340\" width=\"360\" height=\"16\" rx=\"8\" fill=\"#f7b500\" />\n  <rect x=\"80\" y=\"380\" width=\"460\" height=\"16\" rx=\"8\" fill=\"#7c5cff\" />\n</svg>`;\n+
+const ogImage = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"630\" viewBox=\"0 0 1200 630\">\n  <rect width=\"1200\" height=\"630\" fill=\"#0b0c10\" />\n  <text x=\"80\" y=\"140\" fill=\"#e6edf6\" font-size=\"42\" font-family=\"Arial, sans-serif\">Emotion Radar</text>\n  <text x=\"80\" y=\"220\" fill=\"#9fb0c7\" font-size=\"28\" font-family=\"Arial, sans-serif\">Feel the internet in 10 seconds.</text>\n  <rect x=\"80\" y=\"300\" width=\"420\" height=\"16\" rx=\"8\" fill=\"#ff4d4f\" />\n  <rect x=\"80\" y=\"340\" width=\"360\" height=\"16\" rx=\"8\" fill=\"#f7b500\" />\n  <rect x=\"80\" y=\"380\" width=\"460\" height=\"16\" rx=\"8\" fill=\"#7c5cff\" />\n</svg>`;
+
 async function main() {
   await rm(outDir, { recursive: true, force: true });
   await mkdir(outDir, { recursive: true });
@@ -351,6 +392,9 @@ async function main() {
   await writeFile(path.join(outDir, "index.html"), renderHome(), "utf8");
   await mkdir(path.join(outDir, "daily"), { recursive: true });
   await writeFile(path.join(outDir, "daily", "index.html"), renderDaily(), "utf8");
+  await mkdir(path.join(outDir, "about"), { recursive: true });
+  await writeFile(path.join(outDir, "about", "index.html"), renderAbout(), "utf8");
+  await writeFile(path.join(outDir, "404.html"), renderNotFound(), "utf8");
 
   await mkdir(path.join(outDir, "issue"), { recursive: true });
   for (const issue of listIssues()) {
@@ -370,6 +414,7 @@ async function main() {
   const sitemap = [
     `${siteUrl}/`,
     `${siteUrl}/daily/`,
+    `${siteUrl}/about/`,
     `${siteUrl}/collections/`,
     ...issueCollections.map((c) => `${siteUrl}/collections/${c.slug}/`),
     ...listIssues().map((issue) => `${siteUrl}/issue/${issue.slug}/`)
