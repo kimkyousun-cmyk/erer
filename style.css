@@ -9,15 +9,15 @@ body { margin: 0; font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, s
 .hero h1 { margin: 0; font-size: 36px; }
 .hero h1 span { color: #ff7b6f; }
 .hero p { color: #664b3c; }
-.hero-actions { display: flex; gap: 12px; margin-top: 16px; }
+.hero-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
 .eyebrow { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: #9a6b55; }
 .panel { background: #fff; padding: 18px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 18px; }
 .section-head { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px; }
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
 .card { background: #fff; border-radius: 16px; padding: 16px; border: 1px solid #f3e3d6; box-shadow: 0 4px 8px rgba(0,0,0,0.03); }
 .card.highlight { border: 2px solid #ffb5a7; }
-.tag-row, .tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
-.tag, .chip { border-radius: 999px; padding: 6px 10px; font-size: 12px; border: 1px solid #f1d7c6; background: #fff4ea; cursor: pointer; }
+.tag-row, .tag-cloud, .share-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag, .chip { border-radius: 999px; padding: 6px 10px; font-size: 12px; border: 1px solid #f1d7c6; background: #fff4ea; cursor: pointer; text-decoration: none; color: inherit; }
 .chip.active { background: #ff7b6f; color: #fff; border-color: #ff7b6f; }
 .meta { margin-top: 8px; color: #7a5b48; font-size: 12px; }
 .vote-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
@@ -29,7 +29,7 @@ body { margin: 0; font-family: "Pretendard", "Apple SD Gothic Neo", system-ui, s
 .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-top: 12px; }
 .filter-grid select { width: 100%; padding: 8px 10px; border-radius: 12px; border: 1px solid #f1d7c6; }
 .form { display: grid; gap: 10px; margin-top: 12px; }
-.form input, .form select { padding: 10px 12px; border-radius: 12px; border: 1px solid #f1d7c6; }
+.form input, .form select, .form textarea { padding: 10px 12px; border-radius: 12px; border: 1px solid #f1d7c6; }
 .meal-row { display: flex; gap: 12px; flex-wrap: wrap; font-size: 13px; }
 .notice { margin-top: 8px; font-size: 13px; color: #ff7b6f; }
 .footer { margin: 24px auto 40px; max-width: 1100px; padding: 0 24px; color: #8d6b58; display: flex; justify-content: space-between; font-size: 12px; }
@@ -40,7 +40,7 @@ input[type="checkbox"] { accent-color: #ff7b6f; }
 .stat-title { font-size: 12px; color: #8d6b58; }
 .stat-value { font-size: 20px; font-weight: 700; }
 .empty { display: none; padding: 12px; color: #8d6b58; }
-.history { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.history li { background: #fff4ea; padding: 10px 12px; border-radius: 12px; font-size: 13px; }
+.history, .comment-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.history li, .comment-list li { background: #fff4ea; padding: 10px 12px; border-radius: 12px; font-size: 13px; }
 .backup-row { display: flex; gap: 12px; margin-bottom: 10px; }
 textarea { width: 100%; min-height: 120px; padding: 10px; border-radius: 12px; border: 1px solid #f1d7c6; }

@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>오늘 뭐 먹지? · 스마트 메뉴 추천</title>
-  <meta name="description" content="빠르게 오늘의 메뉴를 추천하고, 태그 필터/랜덤 뽑기/투표/즐겨찾기/기록까지 한 번에." />
+  <meta name="description" content="빠르게 오늘의 메뉴를 추천하고, 태그 필터/랜덤 뽑기/투표/즐겨찾기/기록/댓글/제휴 문의까지 한 번에." />
   <meta name="robots" content="index,follow" />
   <link rel="icon" href="/favicon.ico" />
   <link rel="stylesheet" href="/style.css" />
   <meta property="og:title" content="오늘 뭐 먹지? · 스마트 메뉴 추천" />
-  <meta property="og:description" content="태그 기반 추천 + 랜덤 뽑기 + 투표 + 기록까지 되는 메뉴 추천 사이트" />
+  <meta property="og:description" content="태그 기반 추천 + 랜덤 뽑기 + 투표 + 댓글 + 제휴 문의까지 되는 메뉴 추천 사이트" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="/og-image.svg" />
   <meta name="twitter:card" content="summary_large_image" />
@@ -22,6 +22,8 @@
       <a href="#filters">필터</a>
       <a href="#list">목록</a>
       <a href="#add">추가</a>
+      <a href="#comment">댓글</a>
+      <a href="#partner">제휴</a>
     </nav>
   </header>
 
@@ -149,15 +151,38 @@
       <div class="notice" data-add-msg></div>
     </section>
 
-    <section class="panel" id="backup">
-      <h2>백업 & 복원</h2>
-      <div class="backup-row">
-        <button class="button ghost" data-export>데이터 복사</button>
-        <button class="button ghost" data-reset>전체 초기화</button>
+    <section class="panel" id="comment">
+      <h2>댓글</h2>
+      <form class="form" data-comment-form>
+        <input name="name" placeholder="닉네임" required />
+        <input name="content" placeholder="메뉴 추천 코멘트" required />
+        <button class="button" type="submit">댓글 쓰기</button>
+      </form>
+      <ul class="comment-list" data-comment-list></ul>
+    </section>
+
+    <section class="panel" id="partner">
+      <h2>제휴 문의</h2>
+      <p>브랜드/식당 제휴 문의를 남겨주세요.</p>
+      <form class="form" data-partner-form>
+        <input name="company" placeholder="회사/브랜드명" required />
+        <input name="email" type="email" placeholder="이메일" required />
+        <textarea name="message" placeholder="문의 내용" required></textarea>
+        <button class="button" type="submit">문의 보내기</button>
+      </form>
+      <div class="notice" data-partner-msg></div>
+    </section>
+
+    <section class="panel" id="share">
+      <h2>SNS 공유</h2>
+      <div class="share-row">
+        <button class="chip" data-share="copy">링크 복사</button>
+        <a class="chip" target="_blank" rel="noreferrer" href="https://x.com/intent/tweet?text=오늘%20뭐%20먹지%3F%20스마트%20메뉴%20추천%20사이트&url=">X 공유</a>
+        <a class="chip" target="_blank" rel="noreferrer" href="https://www.facebook.com/sharer/sharer.php?u=">Facebook</a>
+        <a class="chip" target="_blank" rel="noreferrer" href="https://wa.me/?text=오늘%20뭐%20먹지%3F%20스마트%20메뉴%20추천%20사이트%20">WhatsApp</a>
+        <a class="chip" target="_blank" rel="noreferrer" href="mailto:?subject=오늘%20뭐%20먹지%3F&body=추천%20사이트%20">이메일</a>
       </div>
-      <textarea placeholder="여기에 JSON을 붙여넣고 복원" data-import></textarea>
-      <button class="button" data-import-btn>복원하기</button>
-      <div class="notice" data-backup-msg></div>
+      <div class="notice" data-share-msg></div>
     </section>
   </main>
 

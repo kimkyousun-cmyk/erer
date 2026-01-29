@@ -12,6 +12,8 @@ const defaultMenus = [
 const storeKey = "menu-reco:data";
 const favKey = "menu-reco:favs";
 const historyKey = "menu-reco:history";
+const commentKey = "menu-reco:comments";
+const partnerKey = "menu-reco:partner";
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => Array.from(document.querySelectorAll(sel));
@@ -41,6 +43,22 @@ function loadHistory() {
 
 function saveHistory(items) {
   localStorage.setItem(historyKey, JSON.stringify(items.slice(0, 5)));
+}
+
+function loadComments() {
+  return JSON.parse(localStorage.getItem(commentKey) || "[]");
+}
+
+function saveComments(items) {
+  localStorage.setItem(commentKey, JSON.stringify(items.slice(0, 20)));
+}
+
+function loadPartners() {
+  return JSON.parse(localStorage.getItem(partnerKey) || "[]");
+}
+
+function savePartners(items) {
+  localStorage.setItem(partnerKey, JSON.stringify(items.slice(0, 10)));
 }
 
 function todayKey() {
@@ -168,6 +186,14 @@ function renderHistory() {
     : "<li>아직 기록이 없어요.</li>";
 }
 
+function renderComments() {
+  const items = loadComments();
+  const list = $("[data-comment-list]");
+  list.innerHTML = items.length
+    ? items.map((item) => `<li><strong>${item.name}</strong> · ${item.content}</li>`).join("")
+    : "<li>첫 댓글을 남겨주세요!</li>";
+}
+
 function initSortButtons() {
   $$("[data-sort]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -283,6 +309,8 @@ function initBackup() {
     localStorage.removeItem(storeKey);
     localStorage.removeItem(favKey);
     localStorage.removeItem(historyKey);
+    localStorage.removeItem(commentKey);
+    localStorage.removeItem(partnerKey);
     init();
   });
 
@@ -304,6 +332,53 @@ function initBackup() {
   });
 }
 
+function initComments() {
+  renderComments();
+  $("[data-comment-form]").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const name = data.get("name").toString().trim();
+    const content = data.get("content").toString().trim();
+    const items = loadComments();
+    items.unshift({ name, content });
+    saveComments(items);
+    renderComments();
+    form.reset();
+  });
+}
+
+function initPartner() {
+  $("[data-partner-form]").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    const entry = {
+      company: data.get("company").toString().trim(),
+      email: data.get("email").toString().trim(),
+      message: data.get("message").toString().trim(),
+      date: todayKey()
+    };
+    const items = loadPartners();
+    items.unshift(entry);
+    savePartners(items);
+    form.reset();
+    $("[data-partner-msg]").textContent = "문의가 접수되었습니다.";
+    setTimeout(() => ($("[data-partner-msg]").textContent = ""), 1500);
+  });
+}
+
+function initShare() {
+  const url = window.location.href;
+  $("[data-share='copy']").addEventListener("click", () => {
+    navigator.clipboard.writeText(url).then(() => {
+      $("[data-share-msg]").textContent = "링크 복사 완료";
+      setTimeout(() => ($("[data-share-msg]").textContent = ""), 1500);
+    });
+  });
+  $$("[data-share='x']");
+}
+
 function init() {
   const menus = loadMenus();
   renderTags(menus);
@@ -315,6 +390,9 @@ function init() {
   initFilters();
   initAddForm();
   initBackup();
+  initComments();
+  initPartner();
+  initShare();
 }
 
 init();
