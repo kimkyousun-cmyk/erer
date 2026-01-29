@@ -71,8 +71,47 @@ export default async function IssuePage({ params }: IssuePageProps) {
         : "Share";
   const issueUrl = `${siteUrl}/issue/${issue.slug}`;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: issue.title,
+    description: issue.context,
+    mainEntityOfPage: issueUrl,
+    datePublished: issue.publishedAt ?? issue.updatedAt,
+    dateModified: issue.updatedAt,
+    author: {
+      "@type": "Organization",
+      name: "Emotion Radar"
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Emotion Radar"
+    }
+  };
+
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: issue.faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer
+      }
+    }))
+  };
+
   return (
     <main className="space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       <header className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow sm:p-8">
         <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-wrap gap-2">

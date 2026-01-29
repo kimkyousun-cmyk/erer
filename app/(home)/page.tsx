@@ -76,6 +76,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
       </section>
 
+      <section className="rounded-3xl border border-white/5 bg-panel/70 p-6 shadow-glow">
+        <div className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">Quick Answer</div>
+        <h2 className="mb-3 text-2xl font-semibold text-ink">What is Emotion Radar?</h2>
+        <p className="mb-4 text-sm leading-6 text-muted">
+          Emotion Radar is a public sentiment visualization engine. It explains how the internet feels about issues
+          — anger, humor, and division — without debating the facts.
+        </p>
+        <ul className="grid grid-cols-1 gap-2 text-sm leading-6 text-ink md:grid-cols-3">
+          <li className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">Answer-first summaries, not news.</li>
+          <li className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">Signals from synthetic reactions and votes.</li>
+          <li className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3">Built for sharing and fast understanding.</li>
+        </ul>
+      </section>
+
       {hasFollowed && followingFeed ? (
         <section className="rounded-3xl border border-white/5 bg-panel/70 p-6 shadow-glow">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

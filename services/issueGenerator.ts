@@ -42,6 +42,53 @@ function whyPeopleDisagree(seed: IssueSeed) {
   };
 }
 
+function quickSummaryLines(seed: IssueSeed, verdict: string, scores: { anger: number; humor: number; division: number }) {
+  const topMood =
+    scores.anger >= scores.humor && scores.anger >= scores.division
+      ? "Anger"
+      : scores.humor >= scores.division
+        ? "Humor"
+        : "Division";
+
+  return [
+    `Trigger: ${seed.trigger}`,
+    `Verdict: ${verdict}`,
+    `Mood snapshot: ${topMood} leads (A${scores.anger} · H${scores.humor} · D${scores.division}).`
+  ];
+}
+
+function faqForSeed(seed: IssueSeed, verdict: string, scores: { anger: number; humor: number; division: number }) {
+  const dominant =
+    scores.anger >= scores.humor && scores.anger >= scores.division
+      ? "anger"
+      : scores.humor >= scores.division
+        ? "humor"
+        : "division";
+
+  return [
+    {
+      question: `What is the core issue in “${seed.title}”?`,
+      answer: verdict
+    },
+    {
+      question: "Why are people reacting this way?",
+      answer:
+        dominant === "anger"
+          ? "The reaction reads as a boundary being crossed, so the tone is protective and sharp."
+          : dominant === "humor"
+            ? "The topic is being processed through jokes first, which keeps it circulating."
+            : "The topic splits identity groups, so reactions are polarized and persistent."
+    },
+    {
+      question: "Is this a stable trend or a spike?",
+      answer:
+        scores.division > 70
+          ? "It is likely to stay divisive because people feel personally invested."
+          : "Momentum depends on whether a new trigger appears."
+    }
+  ];
+}
+
 function keyTriggersFromTimeline(timeline: IssueSeed["timeline"]) {
   const prioritized: IssueSeed["timeline"] = [];
   const priorityKeys: Array<IssueSeed["timeline"][number]["key"]> = [
@@ -82,6 +129,7 @@ function toSummary(seed: IssueSeed): IssueSummary {
     dominantEmotion: analysis.dominantEmotion,
     verdict: analysis.verdict,
     trend: analysis.trend,
+    publishedAt: formatDate(new Date()),
     updatedAt: formatDate(new Date()),
     tags: seed.tags
   };
@@ -115,12 +163,15 @@ export function getIssueDetail(slug: string): IssueDetail | null {
     dominantEmotion: analysis.dominantEmotion,
     verdict: analysis.verdict,
     trend: analysis.trend,
+    publishedAt: formatDate(new Date()),
     updatedAt: formatDate(new Date()),
     tags: seed.tags,
     trigger: seed.trigger,
     keyTriggers: keyTriggersFromTimeline(seed.timeline),
     timeline: seed.timeline,
     reactions: simulateReactions(seed, reactionCount),
+    quickSummary: quickSummaryLines(seed, analysis.verdict.label, analysis.scores),
+    faq: faqForSeed(seed, analysis.verdict.label, analysis.scores),
     whyItBlewUp: whyItBlewUp(seed),
     whyPeopleDisagree: whyPeopleDisagree(seed),
     communityPulse: toCommunityPulse(state),

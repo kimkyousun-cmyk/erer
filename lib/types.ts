@@ -62,6 +62,7 @@ export interface IssueSummary {
     direction: "up" | "down" | "flat";
     label: string;
   } | null;
+  publishedAt?: string | null;
   updatedAt: string;
   tags: string[];
 }
@@ -71,6 +72,8 @@ export interface IssueDetail extends IssueSummary {
   keyTriggers: string[];
   timeline: TimelinePhase[];
   reactions: ReactionSample[];
+  quickSummary: string[];
+  faq: Array<{ question: string; answer: string }>;
   whyItBlewUp: string[];
   whyPeopleDisagree: {
     sideA: string;

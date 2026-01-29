@@ -9,6 +9,7 @@ import { CreatorToolsPanel } from "@/components/CreatorToolsPanel";
 import { useTrackIssueOpen, useTrackScrollDepth } from "@/hooks/useTrackEvent";
 import { FeedbackPanel } from "@/components/FeedbackPanel";
 import { EmotionTrendChart } from "@/components/EmotionTrendChart";
+import { IssueAnswerCard } from "@/components/IssueAnswerCard";
 
 interface IssueDetailClientProps {
   issue: IssueDetail;
@@ -49,6 +50,8 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-6">
+        <IssueAnswerCard issue={issue} />
+
         <section className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xl font-semibold text-ink">Emotional Overview</h2>
@@ -134,6 +137,18 @@ export function IssueDetailClient({ issue }: IssueDetailClientProps) {
               </div>
               {issue.whyPeopleDisagree.sideB}
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-white/5 bg-panel/80 p-6 shadow-glow">
+          <h3 className="mb-3 text-lg font-semibold text-ink">FAQ</h3>
+          <div className="space-y-3">
+            {issue.faq.map((item) => (
+              <div key={item.question} className="rounded-2xl border border-white/5 bg-white/5 p-4">
+                <div className="mb-2 text-sm font-semibold text-ink">{item.question}</div>
+                <p className="text-sm leading-6 text-muted">{item.answer}</p>
+              </div>
+            ))}
           </div>
         </section>
       </div>

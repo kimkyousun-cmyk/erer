@@ -59,6 +59,12 @@ export function toCommunityPulse(state: VoteState): IssueDetail["communityPulse"
     agree: state.agree,
     disagree: state.disagree,
     overreaction: state.overreaction,
-    justified: state.justified
+    justified: state.justified,
+    matrix: {
+      agreeJustified: 0,
+      agreeOverreaction: 0,
+      disagreeJustified: 0,
+      disagreeOverreaction: 0
+    }
   };
 }

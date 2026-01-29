@@ -89,6 +89,62 @@ function whyPeopleDisagree() {
   };
 }
 
+function quickSummaryLines(input: {
+  title: string;
+  context: string;
+  verdict: string;
+  scores: { anger: number; humor: number; division: number };
+}) {
+  const topMood =
+    input.scores.anger >= input.scores.humor && input.scores.anger >= input.scores.division
+      ? "Anger"
+      : input.scores.humor >= input.scores.division
+        ? "Humor"
+        : "Division";
+
+  return [
+    `Trigger: ${input.context}`,
+    `Verdict: ${input.verdict}`,
+    `Mood snapshot: ${topMood} leads (A${input.scores.anger} · H${input.scores.humor} · D${input.scores.division}).`
+  ];
+}
+
+function faqForIssue(input: {
+  title: string;
+  verdict: string;
+  scores: { anger: number; humor: number; division: number };
+}) {
+  const dominant =
+    input.scores.anger >= input.scores.humor && input.scores.anger >= input.scores.division
+      ? "anger"
+      : input.scores.humor >= input.scores.division
+        ? "humor"
+        : "division";
+
+  return [
+    {
+      question: `What is the core issue in “${input.title}”?`,
+      answer: input.verdict
+    },
+    {
+      question: "Why are people reacting this way?",
+      answer:
+        dominant === "anger"
+          ? "The reaction reads as a boundary being crossed, so the tone is protective and sharp."
+          : dominant === "humor"
+            ? "The topic is being processed through jokes first, which keeps it circulating."
+            : "The topic splits identity groups, so reactions are polarized and persistent."
+    },
+    {
+      question: "Is this a stable trend or a spike?",
+      answer:
+        input.scores.division > 70
+          ? "It is likely to stay divisive because people feel personally invested."
+          : "Momentum depends on whether a new trigger appears."
+    }
+  ];
+}
+
 export async function toIssueSummary(
   issue: Issue,
   options?: { trendScore?: number | null; trendDelta?: number | null }
@@ -96,6 +152,7 @@ export async function toIssueSummary(
   const agg = await computeIssueScores(issue);
   const trendFromScore = trendFromTrendScore(options?.trendScore);
   const trendDelta = trendDeltaFromScore(options?.trendDelta);
+  const publishedAt = issue.publishedAt ?? issue.createdAt;
 
   return {
     id: issue.id,
@@ -114,6 +171,7 @@ export async function toIssueSummary(
     },
     trend: trendFromScore ?? trendFromDates(issue),
     trendDelta,
+    publishedAt: publishedAt ? publishedAt.toISOString() : null,
     updatedAt: issue.updatedAt.toISOString().slice(0, 10),
     tags: parseTags(issue.tags)
   };
@@ -127,6 +185,7 @@ export async function toIssueDetail(input: {
 }): Promise<IssueDetail> {
   const agg = await computeIssueScores(input.issue);
   const latestShorts = input.shortsJobs?.[0];
+  const publishedAt = input.issue.publishedAt ?? input.issue.createdAt;
 
   return {
     id: input.issue.id,
@@ -145,6 +204,7 @@ export async function toIssueDetail(input: {
     },
     trend: trendFromDates(input.issue),
     updatedAt: input.issue.updatedAt.toISOString().slice(0, 10),
+    publishedAt: publishedAt ? publishedAt.toISOString() : null,
     tags: parseTags(input.issue.tags),
     trigger: extractTrigger(input.timelineEvents),
     keyTriggers: keyTriggersFromTimeline(input.timelineEvents),
@@ -169,6 +229,17 @@ export async function toIssueDetail(input: {
         | "division",
       text: reaction.text
     })),
+    quickSummary: quickSummaryLines({
+      title: input.issue.title,
+      context: input.issue.contextSummary,
+      verdict: input.issue.verdictLine,
+      scores: { anger: agg.anger, humor: agg.humor, division: agg.division }
+    }),
+    faq: faqForIssue({
+      title: input.issue.title,
+      verdict: input.issue.verdictLine,
+      scores: { anger: agg.anger, humor: agg.humor, division: agg.division }
+    }),
     whyItBlewUp: whyItBlewUp({ anger: agg.anger, humor: agg.humor, division: agg.division }),
     whyPeopleDisagree: whyPeopleDisagree(),
     communityPulse: {
