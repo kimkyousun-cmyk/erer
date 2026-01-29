@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "npx tsx scripts/build-static.ts",
+    "build": "npx @cloudflare/next-on-pages@1",
     "build:static": "npx tsx scripts/build-static.ts",
     "start": "next start",
     "lint": "next lint",
